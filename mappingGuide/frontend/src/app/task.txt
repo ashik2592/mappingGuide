@@ -1,0 +1,1725 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Task } from 'src/app/Task';
+import { ShipmentTypes } from 'src/app/shipmentTypes';
+import { ProcurementTypes } from 'src/app/procurementTypes';
+
+const httpOptions = {
+  headers: new HttpHeaders({
+    'Content-Type': 'Application/json',
+  }),
+};
+
+const shipmentTasks: ShipmentTypes[] = [
+  {
+    fields: [
+      {
+        fieldName: 'Limbiq Reference ID',
+      },
+    ],
+    fieldValue: 'limbiqReferenceId',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'External ID',
+      },
+    ],
+    fieldValue: 'externalId',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Status',
+      },
+    ],
+    fieldValue: 'status',
+    type: 'string',
+    enumType: 'ShipmentStatus',
+    valueMapping: {
+      CARGO_PLANNED: 'Cargo Planned',
+      CARGO_READY: 'Cargo Ready',
+      SHIPMENT_PLACED: 'Shipment Placed',
+      SHIPMENT_CONFIRMED: 'Shipment Confirmed',
+      ESCALATION_CLARIFICATION: 'Clarification',
+      CARGO_DISPATCHED: 'Cargo Dispatched',
+      SHIPPED: 'Shipped',
+      ARRIVED_AT_POD: 'Arrived at POD',
+      SHIPPED_FROM_POD_TO_DESTINATION: 'Shipped from POD',
+      ARRIVED_AT_DESTINATION: 'Arrived at Destination',
+      CANCELLED: 'Cancelled',
+    },
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Consignee - Company Name',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=CONSIGNEE].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Consignee - Company Code',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=CONSIGNEE].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Consignee - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=CONSIGNEE].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Shipper - Company Name',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=SHIPPER].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Shipper - Company Code',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=SHIPPER].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Shipper - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=SHIPPER].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Forwarder - Company Name',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=FORWARDER].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Forwarder - Company Code',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=FORWARDER].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Forwarder - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=FORWARDER].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Notify Party - Company Name',
+      },
+    ],
+    fieldValue:
+      'extendedPartners[role=NOTIFICATION_PARTY].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Notify Party - Company Code',
+      },
+    ],
+    fieldValue:
+      'extendedPartners[role=NOTIFICATION_PARTY].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Notify Party - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=NOTIFICATION_PARTY].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Carrier',
+      },
+    ],
+    fieldValue: 'carrier',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Freight Payment Terms',
+      },
+    ],
+    fieldValue: 'freightPaymentTerms',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Freight Cost Currency',
+      },
+    ],
+    fieldValue: 'freightCostCurrency',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Vessel #/Flight #/Rail #/Truck',
+      },
+    ],
+    fieldValue: 'vesselNumber.name',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Carrier Reference Number',
+      },
+    ],
+    fieldValue: 'carrierReferenceNumber',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'On Carriage',
+      },
+    ],
+    fieldValue: 'onCarriage',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Shipment Type',
+      },
+    ],
+    fieldValue: 'shipmentType',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Hazmat - UN/NA #',
+      },
+    ],
+    fieldValue: 'hazmatDetails.unNaNumber',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Hazmat - Class',
+      },
+    ],
+    fieldValue: 'hazmatDetails.hazmatClass',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Hazmat - Packaging Grp',
+      },
+    ],
+    fieldValue: 'hazmatDetails.hazmatPackagingGroup',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Hazmat - Commodity',
+      },
+    ],
+    fieldValue: 'hazmatDetails.hazmatCommodity',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Hazmat - Emergency Contact',
+      },
+    ],
+    fieldValue: 'hazmatDetails.emergencyContact',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Hazmat - Notes',
+      },
+    ],
+    fieldValue: 'hazmatDetails.notes',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Shipment Notes',
+      },
+    ],
+    fieldValue: 'newInstructions',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'MOT',
+      },
+    ],
+    fieldValue: 'mot',
+    type: 'string',
+    enumType: 'MOT',
+    defaultValue: 'Sea',
+    valueMapping: {
+      AIR: 'Air',
+      BARGE: 'Barge',
+      BARGE_RAIL_TRUCK: 'Barge Rail Truck',
+      BARGE_TRUCK: 'Barge Truck',
+      NOT_APPLICABLE: 'Not Applicable',
+      RAIL: 'Rail',
+      RAIL_TRUCK: 'Rail truck',
+      SEA: 'Sea',
+      SEA_AIR: 'Sea Air',
+      TRUCK: 'Truck',
+    },
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Incoterm',
+      },
+    ],
+    fieldValue: 'incoterm',
+    type: 'string',
+    enumType: 'Incoterm',
+    defaultValue: 'FOB',
+    valueMapping: {
+      CFR: 'CFR',
+      CIF: 'CIF',
+      CIP: 'CIP',
+      CPT: 'CPT',
+      DAP: 'DAP',
+      DDP: 'DDP',
+      DPU: 'DPU',
+      EXW: 'EXW',
+      FAS: 'FAS',
+      FCA: 'FCA',
+      FOB: 'FOB',
+    },
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Address',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].address',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - City - Name',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].city.name',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - City - Unlocode',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].city.unLocode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Planned Time',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].plannedTime',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Estimated Time',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].estimatedTime',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Actual Time',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].actualTime',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Quantity Type/UOM',
+      },
+    ],
+    fieldValue: 'measurementUnit',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Packaging Type',
+      },
+    ],
+    fieldValue: 'packagingType',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Length UOM',
+      },
+    ],
+    fieldValue: 'packagingDimensionLength.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Width UOM',
+      },
+    ],
+    fieldValue: 'packagingDimensionWidth.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Height UOM',
+      },
+    ],
+    fieldValue: 'packagingDimensionHeight.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Order #',
+      },
+    ],
+    fieldValue: 'extendedCargos.purchaseOrderLabel',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Product Name',
+      },
+    ],
+    fieldValue: 'extendedCargos.productName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Product Code',
+      },
+    ],
+    fieldValue: 'extendedCargos.productCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Quantity Type/UOM',
+      },
+    ],
+    fieldValue: 'extendedCargos.measurementUnit',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Packaging Type',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingType',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Pkg. Dim. Length UOM',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingDimensionLength.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Pkg. Dim. Width UOM',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingDimensionWidth.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Pkg. Dim. Height UOM',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingDimensionHeight.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Currency',
+      },
+    ],
+    fieldValue: 'extendedCargos.currency',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Hazmat - UN/NA #',
+      },
+    ],
+    fieldValue: 'extendedCargos.hazmatDetails.unNaNumber',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Hazmat - Class',
+      },
+    ],
+    fieldValue: 'extendedCargos.hazmatDetails.hazmatClass',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Hazmat - Packaging Grp',
+      },
+    ],
+    fieldValue: 'extendedCargos.hazmatDetails.hazmatPackagingGroup',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Hazmat - Commodity',
+      },
+    ],
+    fieldValue: 'extendedCargos.hazmatDetails.hazmatCommodity',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Hazmat - Emergency Contact',
+      },
+    ],
+    fieldValue: 'extendedCargos.hazmatDetails.emergencyContact',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Hazmat - Notes',
+      },
+    ],
+    fieldValue: 'extendedCargos.hazmatDetails.notes',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Container Number',
+      },
+    ],
+    fieldValue: 'extendedCargos.containerNumber',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Container Number',
+      },
+    ],
+    fieldValue: 'extendedContainers.containerNumber',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Container Code',
+      },
+    ],
+    fieldValue: 'extendedContainers.containerCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Container Size',
+      },
+    ],
+    fieldValue: 'extendedContainers.containerSize',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Container Type',
+      },
+    ],
+    fieldValue: 'extendedContainers.containerType',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Container Count',
+      },
+    ],
+    fieldValue: 'extendedContainers.containerCount',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN When container count used',
+      },
+    ],
+    fieldValue: 'extendedContainers.containerCountMap',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Quantity Type/UOM',
+      },
+    ],
+    fieldValue: 'extendedContainers.measurementUnit',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Packaging Type',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingType',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Pkg. Dim. Length UOM',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingDimensionLength.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Pkg. Dim. Width UOM',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingDimensionWidth.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Pkg. Dim. Height UOM',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingDimensionHeight.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Hazmat',
+      },
+    ],
+    fieldValue: 'hazmat',
+    type: 'boolean',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Hazmat',
+      },
+    ],
+    fieldValue: 'extendedCargos.hazmat',
+    type: 'boolean',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Quantity',
+      },
+    ],
+    fieldValue: 'quantityValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Gross Weight/Weight',
+      },
+    ],
+    fieldValue: 'grossWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Net Weight',
+      },
+    ],
+    fieldValue: 'netWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Volume',
+      },
+    ],
+    fieldValue: 'volumeValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Length',
+      },
+    ],
+    fieldValue: 'packagingDimensionLength.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Width',
+      },
+    ],
+    fieldValue: 'packagingDimensionWidth.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Height',
+      },
+    ],
+    fieldValue: 'packagingDimensionHeight.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Quantity',
+      },
+    ],
+    fieldValue: 'extendedCargos.quantityValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Gross Weight/Weight',
+      },
+    ],
+    fieldValue: 'extendedCargos.grossWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Net Weight',
+      },
+    ],
+    fieldValue: 'extendedCargos.netWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Volume',
+      },
+    ],
+    fieldValue: 'extendedCargos.volumeValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Pkg. Dim. Length',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingDimensionLength.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Pkg. Dim. Width',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingDimensionWidth.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Pkg. Dim. Height',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingDimensionHeight.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Unit Price',
+      },
+    ],
+    fieldValue: 'extendedCargos.unitPrice',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Quantity',
+      },
+    ],
+    fieldValue: 'extendedContainers.quantityValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Gross Weight/Weight',
+      },
+    ],
+    fieldValue: 'extendedContainers.grossWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Net Weight',
+      },
+    ],
+    fieldValue: 'extendedContainers.netWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Volume',
+      },
+    ],
+    fieldValue: 'extendedContainers.volumeValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Pkg. Dim. Length',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingDimensionLength.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Pkg. Dim. Width',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingDimensionWidth.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Pkg. Dim. Height',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingDimensionHeight.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Packaging Quantity',
+      },
+    ],
+    fieldValue: 'packagingQuantity',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'TEU',
+      },
+    ],
+    fieldValue: 'teu',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Cargo Packaging Quantity',
+      },
+    ],
+    fieldValue: 'extendedCargos.packagingQuantity',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN Packaging Quantity',
+      },
+    ],
+    fieldValue: 'extendedContainers.packagingQuantity',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CN TEU',
+      },
+    ],
+    fieldValue: 'extendedContainers.teu',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Planned Date',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].plannedDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Estimated Date',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].estimatedDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Actual Date',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].actualDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CRD',
+      },
+    ],
+    fieldValue: 'crdValue',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Freight Cost',
+      },
+    ],
+    fieldValue: 'freightCost',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'CY Cutoff',
+      },
+    ],
+    fieldValue: 'cyCutoff',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Doc Cutoff',
+      },
+    ],
+    fieldValue: 'docCutoff',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Additional Reference',
+      },
+    ],
+    fieldValue:
+      'additionalReferences[referenceFieldName=?].referenceFieldValue',
+    type: 'any',
+  },
+];
+
+const procurementTasks: ProcurementTypes[] = [
+  {
+    fields: [
+      {
+        fieldName: 'Order #',
+      },
+    ],
+    fieldValue: 'purchaseOrderLabel',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Status',
+      },
+    ],
+    fieldValue: 'status',
+    type: 'string',
+    enumType: 'ProcurementStatus',
+    valueMapping: {
+      SUBMITTED: 'Submitted',
+      REQUEST_CHANGES: 'Requested Changes',
+      APPROVE_CHANGES: 'Approved Changes',
+      REJECT_CHANGES: 'Rejected Changes',
+      REJECTED: 'Rejected',
+      CANCELLED: 'Cancelled',
+      PO_CONFIRMED: 'Order Confirmed',
+      CARGO_PLANNED: 'Cargo Planned',
+      CARGO_READY: 'Cargo Ready',
+      SHIPMENT_PLACED: 'Shipment Placed',
+      SHIPMENT_CONFIRMED: 'Shipment Confirmed',
+      ESCALATION_CLARIFICATION: 'Clarification',
+      CARGO_DISPATCHED: 'Cargo Dispatched',
+      SHIPPED: 'Shipped',
+      ARRIVED_AT_POD: 'Arrived at POD',
+      SHIPPED_FROM_POD_TO_DESTINATION: 'Shipped from POD',
+      ARRIVED_AT_DESTINATION: 'Arrived at Destination',
+    },
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Consignee - Company Name',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=CONSIGNEE].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Consignee - Company Code',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=CONSIGNEE].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Consignee - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=CONSIGNEE].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Shipper - Company Name',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=SHIPPER].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Shipper - Company Code',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=SHIPPER].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Shipper - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=SHIPPER].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Forwarder - Company Name',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=FORWARDER].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Forwarder - Company Code',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=FORWARDER].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Forwarder - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=FORWARDER].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Notify Party - Company Name',
+      },
+    ],
+    fieldValue:
+      'extendedPartners[role=NOTIFICATION_PARTY].groupPartner.groupName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Notify Party - Company Code',
+      },
+    ],
+    fieldValue:
+      'extendedPartners[role=NOTIFICATION_PARTY].groupPartner.groupCode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Partner - Notify Party - Email',
+      },
+    ],
+    fieldValue: 'extendedPartners[role=NOTIFICATION_PARTY].email',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Order Notes',
+      },
+    ],
+    fieldValue: 'newInstructions',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'MOT',
+      },
+    ],
+    fieldValue: 'mot',
+    type: 'string',
+    enumType: 'MOT',
+    defaultValue: 'Sea',
+    valueMapping: {
+      AIR: 'Air',
+      BARGE: 'Barge',
+      BARGE_RAIL_TRUCK: 'Barge Rail Truck',
+      BARGE_TRUCK: 'Barge Truck',
+      NOT_APPLICABLE: 'Not Applicable',
+      RAIL: 'Rail',
+      RAIL_TRUCK: 'Rail truck',
+      SEA: 'Sea',
+      SEA_AIR: 'Sea Air',
+      TRUCK: 'Truck',
+    },
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Incoterm',
+      },
+    ],
+    fieldValue: 'incoterm',
+    type: 'string',
+    enumType: 'Incoterm',
+    defaultValue: 'FOB',
+    valueMapping: {
+      CFR: 'CFR',
+      CIF: 'CIF',
+      CIP: 'CIP',
+      CPT: 'CPT',
+      DAP: 'DAP',
+      DDP: 'DDP',
+      DPU: 'DPU',
+      EXW: 'EXW',
+      FAS: 'FAS',
+      FCA: 'FCA',
+      FOB: 'FOB',
+    },
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Address',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].address',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - City - Name',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].city.name',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - City - Unlocode',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].city.unLocode',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Planned Time',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].plannedTime',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Estimated Time',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].estimatedTime',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Actual Time',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].actualTime',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Quantity Type/UOM',
+      },
+    ],
+    fieldValue: 'measurementUnit',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Packaging Type',
+      },
+    ],
+    fieldValue: 'packagingType',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Length UOM',
+      },
+    ],
+    fieldValue: 'packagingDimensionLength.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Width UOM',
+      },
+    ],
+    fieldValue: 'packagingDimensionWidth.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Height UOM',
+      },
+    ],
+    fieldValue: 'packagingDimensionHeight.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Order Confirmation #',
+      },
+    ],
+    fieldValue: 'confirmationNumber',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Product Name',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.productName',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Quantity Type/UOM',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.measurementUnit',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Packaging Type',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingType',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Pkg. Dim. Length UOM',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingDimensionLength.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Pkg. Dim. Width UOM',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingDimensionWidth.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Pkg. Dim. Height UOM',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingDimensionHeight.uom',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Currency',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.currency',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Hazmat - UN/NA #',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.hazmatDetails.unNaNumber',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Hazmat - Class',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.hazmatDetails.hazmatClass',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Hazmat - Packaging Grp',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.hazmatDetails.hazmatPackagingGroup',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Hazmat - Commodity',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.hazmatDetails.hazmatCommodity',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Hazmat - Emergency Contact',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.hazmatDetails.emergencyContact',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Hazmat - Notes',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.hazmatDetails.notes',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Product - Notes',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.newInstructions',
+    type: 'string',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Hazmat',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.hazmat',
+    type: 'boolean',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Quantity',
+      },
+    ],
+    fieldValue: 'quantityValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Gross Weight/Weight',
+      },
+    ],
+    fieldValue: 'grossWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Net Weight',
+      },
+    ],
+    fieldValue: 'netWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Volume',
+      },
+    ],
+    fieldValue: 'volumeValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Length',
+      },
+    ],
+    fieldValue: 'packagingDimensionLength.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Width',
+      },
+    ],
+    fieldValue: 'packagingDimensionWidth.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Pkg. Dim. Height',
+      },
+    ],
+    fieldValue: 'packagingDimensionHeight.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Quantity',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.quantityValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Gross Weight/Weight',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.grossWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Net Weight',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.netWeight',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Volume',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.volumeValue',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Pkg. Dim. Length',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingDimensionLength.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Pkg. Dim. Width',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingDimensionWidth.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Pkg. Dim. Height',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingDimensionHeight.value',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Unit Price',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.unitPrice',
+    type: 'double',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'PO Packaging Quantity',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.packagingQuantity',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Packaging Quantity',
+      },
+    ],
+    fieldValue: 'packagingQuantity',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'TEU',
+      },
+    ],
+    fieldValue: 'teu',
+    type: 'integer',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Order Placed Date',
+      },
+    ],
+    fieldValue: 'orderPlacedDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Planned Date',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].plannedDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Estimated Date',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].estimatedDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Transshipport - Actual Date',
+      },
+    ],
+    fieldValue: 'extendedTransshipPorts[type=POL].actualDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Order Placed Date',
+      },
+    ],
+    fieldValue: 'orderPlacedDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Order Confirmed Date',
+      },
+    ],
+    fieldValue: 'confirmedDate',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: ' PO CRD',
+      },
+    ],
+    fieldValue: 'extendedDeliveries.crdValue',
+    type: 'ZonedDateTime',
+  },
+  {
+    fields: [
+      {
+        fieldName: 'Additional Reference',
+      },
+    ],
+    fieldValue:
+      'additionalReferences[referenceFieldName=?].referenceFieldValue',
+    type: 'any',
+  },
+];
+
+@Injectable({
+  providedIn: 'root',
+})
+export class TaskService {
+  private apiUrl = 'http://localhost:5000/tasks';
+
+  constructor(private http: HttpClient) {}
+
+  getTasks(): Observable<Task[]> {
+    return this.http.get<Task[]>(this.apiUrl);
+  }
+  deleteTasks(task: Task): Observable<Task> {
+    const url = `${this.apiUrl}/${task.id}`;
+    return this.http.delete<Task>(url);
+  }
+
+  updateTaskReminder(task: Task): Observable<Task> {
+    const url = `${this.apiUrl}/${task.id}`;
+    return this.http.put<Task>(url, task, httpOptions);
+  }
+  addTask(task: Task): Observable<Task> {
+    return this.http.post<Task>(this.apiUrl, task, httpOptions);
+  }
+}

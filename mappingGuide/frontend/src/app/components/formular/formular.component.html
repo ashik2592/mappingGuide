@@ -1,0 +1,40 @@
+<form>
+  <div class="form-control">
+    <label for="groupId"> Group ID: </label>
+    <select name="groupId">
+      <option value="limbiq-brand-jane-brand">Arne</option>
+      <option value="limbiq.com-ashikcorp">Ashik</option>
+      <option value="limbiq.com-onboardingconsignee">Nina</option>
+      <option value="select" selected="selected">choose group id</option>
+    </select>
+  </div>
+  <div class="form-control">
+    <label for="operation"> Operation: </label>
+    <select name="operation">
+      <option value="import">Import</option>
+      <option value="export">Export</option>
+      <option value="select" selected="selected">choose operation</option>
+    </select>
+  </div>
+  <!-- <div class="form-control">
+    <label for="typeText"> Type: </label>
+  </div> -->
+  <div class="form-control">
+    <label for="typeText"> Name: </label>
+    <input type="text" name="name" placeholder="Should be unique">
+  </div>
+  <div class="form-control">
+    <label for="typeText"> EntityType: </label>
+    <select name="entityType">
+      <option value="Shipment">Shipment</option>
+      <option value="Procurement">Procurement</option>
+      <option value="select" selected="selected">choose entity type</option>
+    </select>
+  </div>
+  <div class="form-control">
+    <label for="typeText"> Id: </label>
+    <!-- <input type="text" name="_id" placeholder="Choose Type"> get value from operation and name, merge and show the value-->
+  </div>
+  <button type="submit" class="btn btn-block">Send</button>
+
+</form>

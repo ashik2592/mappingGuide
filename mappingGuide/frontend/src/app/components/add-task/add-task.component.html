@@ -1,0 +1,23 @@
+<form *ngIf = "showAddTask" class="add-form" (ngSubmit)="onSubmit()">
+    <div class="form-control">
+        <label for="name">Excel Header</label>
+        <input type="text" name="name"  [(ngModel)]="name" id="name" placeholder="Excel Header">
+    </div>
+    <div class="form-control">
+        <label for="addRef">Additional Reference</label>
+        <select name="additionalReference">
+            <option value="yes">Yes</option>
+            <option value="no" selected>No</option>
+            
+          </select>
+    </div>
+    <div class="form-control">
+        <label for="fieldName">Field Name</label>
+        <input type="text" name="fieldName" [(ngModel)]="fieldName" id="fieldName" placeholder="Choose Field Name">
+    </div>
+    <div class="form-control form-control-check">
+        <label for="reminder">Check Fields</label>
+        <input type="checkbox" name="reminder" [(ngModel)]="reminder" id="reminder">
+    </div>
+    <input type="submit" value="Save Fields" class="btn btn-block">
+</form>

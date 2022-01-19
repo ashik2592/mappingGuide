@@ -53,7 +53,16 @@ body {
 }
 
 .form-control label {
-  display: block;
+  display: flex;
+}
+
+.form-control select {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  margin: 5px;
+  padding: 3px 7px;
+  font-size: 17px;
 }
 
 .form-control input {
@@ -78,3 +87,11 @@ body {
   flex: 2;
   height: 20px;
 }
+
+.logo {
+  text-align: center;
+  margin-top: 15px;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
