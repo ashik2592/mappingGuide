@@ -6,6 +6,11 @@ import { RouterModule, Routes } from '@angular/router';
 import { MatSliderModule } from '@angular/material/slider';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
+
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -20,6 +25,7 @@ import { FooterComponent } from './components/footer/footer.component';
 import { FormularComponent } from './components/formular/formular.component';
 import { SelectHintErrorExampleComponent } from './components/select-hint-error-example/select-hint-error-example.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DialogBoxComponent } from './components/dialog-box/dialog-box.component';
 
 const appRoutes: Routes = [
   { path: '', component: TasksComponent },
@@ -38,6 +44,8 @@ const appRoutes: Routes = [
     FooterComponent,
     FormularComponent,
     SelectHintErrorExampleComponent,
+    DialogBoxComponent,
+    
     
   ],
   imports: [
@@ -51,7 +59,11 @@ const appRoutes: Routes = [
     MatSliderModule,
     MatFormFieldModule,
     MatSelectModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent],

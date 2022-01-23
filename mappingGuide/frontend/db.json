@@ -13,46 +13,16 @@
       "reminder": true
     },
     {
-      "id": 3,
-      "name": "Credit Card Verfication",
-      "fieldName": "July 8th at 12:30pm",
-      "reminder": false
-    },
-    {
       "name": "Testing",
       "fieldName": "March 20",
       "reminder": true,
       "id": 4
     },
     {
-      "name": "Bill of lading",
-      "fieldName": "tuesfieldName",
-      "reminder": false,
-      "id": 5
-    },
-    {
-      "name": "tracking",
-      "fieldName": "anything",
-      "reminder": true,
-      "id": 6
-    },
-    {
-      "name": "forwarder name",
-      "fieldName": "shipping",
-      "reminder": false,
-      "id": 7
-    },
-    {
       "name": "Shipment date",
       "fieldName": "anything",
       "reminder": false,
       "id": 8
-    },
-    {
-      "name": "example",
-      "fieldName": "anything",
-      "reminder": true,
-      "id": 9
     }
   ]
 }
