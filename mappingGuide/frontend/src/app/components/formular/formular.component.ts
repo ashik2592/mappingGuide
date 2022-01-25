@@ -1,5 +1,5 @@
-import { variable } from '@angular/compiler/src/output/output_ast';
-import { Component, OnInit } from '@angular/core';
+
+import { Component, OnInit, EventEmitter } from '@angular/core'; //Output
 import {
   ReactiveFormsModule,
   FormControl,
@@ -10,6 +10,8 @@ import {
   FormControlName,
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+//import { shipmentTypes } from "src/app/shipmentTypes"
+//import { procurementTypes } from "src/app/procurementTypes"
 
 interface Group {
   name: string;
@@ -37,6 +39,7 @@ export class FormularComponent implements OnInit {
   newName!: string;
   selectedEntity!: string;
   combinedId!: string;
+  columns!: any;
 
   selectFormControl = new FormControl('', Validators.required);
   groupIdControl = new FormControl('', Validators.required);
@@ -51,22 +54,26 @@ export class FormularComponent implements OnInit {
   entities: Entity[] = [{ name: 'shipment' }, { name: 'procurement' }];
   //name = new FormControl('', Validators.required);
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) { }
   ngOnInit() {
     this.type = this.fb.group({
-      _id: this.combinedId,
+      _id: '',
       name: ['', Validators.required],
       entityType: ['', Validators.required],
     });
+    this.columns = this.fb.array([
+
+    ])
+    // this.columns = this.fb.group({
+
+    // })
     this.mgUI = this.fb.group({
       groupId: ['', Validators.required],
       operation: ['', Validators.required],
       type: this.type,
       eachRowUniqueEntity: false,
       matchCargosByOrderNumber: false,
-      columns: this.fb.array([
-        //nameID: ['', Validators.required],
-      ]),
+      columns: this.columns
     });
     this.mgUI.get('groupId')?.valueChanges.subscribe((value) => {
       this.newID = value;
@@ -90,8 +97,29 @@ export class FormularComponent implements OnInit {
     // console.log(combinedId);
   }
 
+  addNewColumn() {
+    const addColumn = this.mgUI.get('columns') as FormArray;
+    addColumn.push(this.fb.group({
+      excelHeader: ['', Validators.required],
+      fields: { fieldName: ["ashik"] },
+      type: [],
+      primaryKeyOrder: [],
+      primaryKeyField: [],
+      description: [],
+      multiValueDelimiter: [],
+      deleteWhenNotMatching: [],
+      enumType: [],
+      valueMapping: {}
+    }))
+  }
+
+  deleteNewColumn(index: number) {
+    const deleteColumn = this.mgUI.get('columns') as FormArray;
+    deleteColumn.removeAt(index)
+  }
   onSubmit() {
     // TODO: Use EventEmitter with form value
     console.warn(this.mgUI.value);
   }
+
 }

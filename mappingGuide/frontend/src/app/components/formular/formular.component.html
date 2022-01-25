@@ -36,7 +36,7 @@
     <!-- <span formControlName="_id"></span> -->
     <mat-form-field class="example-full-width" appearance="fill">
       <mat-label>ID</mat-label>
-      <input matInput formControlName="_id" [readonly]="true" [value]="this.newName">
+      <input matInput formControlName="_id" [value]="this.newName">
       <!-- <input matInput formControlName="_id" name="_id" [readonly]="true" [value]='selectedId + "_" + selectedEntity'> -->
     </mat-form-field>
   </div>
@@ -46,9 +46,23 @@
   <p>
     <mat-checkbox formControlName="matchCargosByOrderNumber">Cargo Order Number</mat-checkbox>
   </p>
-  <app-dialog-box></app-dialog-box>
-  <!-- (click)="openDialog()" -->
+  <button mat-raised-button color="primary" (click)="addNewColumn()">Add</button>
   <button mat-raised-button color="primary" type="submit">Send</button>
+  <div formGroupName="columns">
+    <div *ngFor="let column of columns.controls; let i = index">
+
+      Column No: {{i}}
+      <div>
+        Excel Header <input formArrayName="excelHeader">
+      </div>
+
+      <div>
+        Fields <input formControlName="fieldName" name="fieldName">
+      </div>
+      <button (click)=" deleteNewColumn(i)">Delete - {{i}}</button>
+    </div>
+  </div>
+
 </form>
 <div class="form-val">
   {{mgUI.value | json}}
