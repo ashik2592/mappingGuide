@@ -1,14 +1,17 @@
 <form [formGroup]="mgUI" (ngSubmit)="onSubmit()" *ngIf="!!mgUI">
-  <mat-form-field appearance="fill">
-    <mat-label>Group Id</mat-label>
-    <mat-select formControlName="groupId" [(ngModel)]="selectedId" multiple required>
-      <mat-option *ngFor="let group of groups" [value]="group.id">
-        {{group.name}}
-      </mat-option>
-    </mat-select>
-    <mat-error *ngIf="groupIdControl.hasError('required')">Please choose an ID</mat-error>
-    <mat-hint>{{mgUI.value.groupId}}</mat-hint>
-  </mat-form-field>
+  <div class="form-control">
+    <!-- check with CSS options with angular material-->
+    <mat-form-field appearance="fill">
+      <mat-label>Group Id</mat-label>
+      <mat-select formControlName="groupId" multiple required>
+        <mat-option *ngFor="let group of groups" [value]="group.id">
+          {{group.name}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="groupIdControl.hasError('required')">Please choose an ID</mat-error>
+      <mat-hint>{{mgUI.value.groupId}}</mat-hint>
+    </mat-form-field>
+  </div>
   <mat-form-field appearance="fill">
     <mat-label>Operation</mat-label>
     <mat-select formControlName="operation" multiple required>
@@ -21,9 +24,9 @@
   <div class="example-form" formGroupName="type">
     <mat-form-field appearance="fill">
       <mat-label>EntityType</mat-label>
-      <mat-select formControlName="entityType" [(ngModel)]="selectedEntity" multiple required>
-        <mat-option *ngFor="let entity of entities" [value]="entity.name">
-          {{entity.name}}
+      <mat-select formControlName="entityType" (valueChange)="onSelect($event)" required>
+        <mat-option *ngFor="let entities of entity" [value]="entities.name">
+          {{entities.name}}
         </mat-option>
       </mat-select>
       <mat-error *ngIf="entityControl.hasError('required')">Please Choose an Entity</mat-error>
@@ -33,11 +36,9 @@
       <input matInput placeholder="Company name" name="name" formControlName="name">
       <mat-hint><strong>Please keep an unique name</strong> </mat-hint>
     </mat-form-field>
-    <!-- <span formControlName="_id"></span> -->
     <mat-form-field class="example-full-width" appearance="fill">
       <mat-label>ID</mat-label>
       <input matInput formControlName="_id" [value]="this.newName">
-      <!-- <input matInput formControlName="_id" name="_id" [readonly]="true" [value]='selectedId + "_" + selectedEntity'> -->
     </mat-form-field>
   </div>
   <p>
@@ -46,24 +47,235 @@
   <p>
     <mat-checkbox formControlName="matchCargosByOrderNumber">Cargo Order Number</mat-checkbox>
   </p>
-  <button mat-raised-button color="primary" (click)="addNewColumn()">Add</button>
-  <button mat-raised-button color="primary" type="submit">Send</button>
-  <div formGroupName="columns">
+  <!---------------------------------------------------------------------------------------------------------------->
+  <div formArrayName="columns">
+    <div *ngFor="let column of columns().controls; let colIndex = index">
+      <h3>Columns</h3>
+      <div [formGroupName]="colIndex">
+        <div>
+          <mat-form-field class="example-chip-list" appearance="fill">
+            <mat-label>Excel Header</mat-label>
+            <mat-chip-list #chipList aria-label="Header Selecetion">
+              <mat-chip *ngFor="let header of headers" (removed)="remove(header)">
+                {{header}}
+                <button matChipRemove>
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip>
+              <input matInput placeholder="New header..." #headerInput [formControl]="headerCtrl" formControlName="name"
+                [matAutocomplete]="auto" [matChipInputFor]="chipList"
+                [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="add($event)">
+            </mat-chip-list>
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+              <mat-option *ngFor="let header of filteredheaders | async" [value]="header">
+                {{header}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+        <div formGroupName="fields">
+          <mat-form-field appearance="fill">
+            <mat-label>Field Name</mat-label>
+            <mat-select formControlName="fieldName" (valueChange)="onChange($event, $event)">
+              <mat-option *ngFor="let shipments of shipment" [value]="shipments.fieldName">
+                {{shipments.name}}
+              </mat-option>
+              <mat-option *ngFor="let procurements of procurement" [value]="procurements.fieldName">
+                {{procurements.name}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="add-Regexs-form">
+            <ng-container formArrayName="regexToApply">
+              <h4>Regex Function:</h4>
+              <ng-container *ngFor="let regexFunc of regexFunctions(colIndex).controls; let mapIndex = index">
+                <div class="mapping-form-row" [formGroupName]="mapIndex">
+                    <mat-form-field appearance="fill">
+                      <input matInput formControlName="regexToSearch" placeholder="regex">
+                    </mat-form-field>
+                    <mat-form-field appearance="fill">
+                      <input matInput formControlName="replaceWith" placeholder="Value to replace">
+                    </mat-form-field>
+                    <p>
+                      <mat-checkbox formControlName="useMatchedValue">Use Match Value</mat-checkbox>
+                    </p>
+                    <mat-icon class="delete-btn" (click)="removeRegex(colIndex, mapIndex)">
+                      delete_forever</mat-icon>
+                </div>
+              </ng-container>
+            </ng-container>
+            <button mat-mini-fab (click)="addNewRegex(colIndex)">
+              <mat-icon class="add-mapping-btn">add</mat-icon>
+            </button>
+          </div> 
+          <!-- <div class="add-regex-form">
+          <ng-container *ngFor="let subcolumn of column.fields['regexToApply']; let regexIndex = index">
+            <div class="regex-form-row" formGroupName="regexToApply">
+              <mat-form-field appearance="fill">
+                <input matInput formControlName="regexToSearch" placeholder="regex">
+              </mat-form-field>
+              <mat-form-field appearance="fill">
+                <input matInput formControlName="replaceWith" placeholder="Value to replace">
+              </mat-form-field>
+              <p> <mat-checkbox formControlName="">Use Match Value</mat-checkbox> </p>
+              <mat-icon class="delete-btn" (click)="deleteRegex(i)">
+                delete_forever</mat-icon>
+            </div>
+          </ng-container>
+          <button mat-mini-fab (click)="addRegex(i)">
+            <mat-icon class="add-mapping-btn">add</mat-icon>
+          </button>
+        </div> -->
+        </div>
+        <mat-form-field appearance="fill">
+          <mat-label>Type</mat-label>
+          <mat-select required formControlName="type">
+            <mat-option *ngFor="let shipmentTypes of shipmentType" [value]="shipmentTypes.type">
+              {{shipmentTypes.type}}
+            </mat-option>
+            <mat-option *ngFor="let procurementTypes of procurementType" [value]="procurementTypes.type">
+              {{procurementTypes.type}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Primary Key Order </mat-label>
+          <input matInput type="number" placeholder="Ex. 1" formControlName="primaryKeyOrder" autocomplete="off"
+            min="0">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Primary Key Field </mat-label>
+          <mat-select formControlName="primaryKeyField">
+            <mat-option *ngFor="let shipmentTypes of shipmentType" [value]="shipmentTypes.fieldName">
+              {{shipmentTypes.fieldName}}
+            </mat-option>
+            <mat-option *ngFor="let procurementTypes of procurementType" [value]="procurementTypes.fieldName">
+              {{procurementTypes.fieldName}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Description</mat-label>
+          <input matInput type="text" formControlName="description" placeholder="enter a description">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Enum Type</mat-label>
+          <!-- <input matInput type="text" placeholder="enter a primaryKeyField"> -->
+          <mat-select formControlName="enumType">
+            <mat-option>--</mat-option>
+            <mat-option *ngFor="let shipmentTypes of shipmentType" [value]="shipmentTypes.enumType">
+              {{shipmentTypes.enumType}}
+            </mat-option>
+            <mat-option *ngFor="let procurementTypes of procurementType" [value]="procurementTypes.enumType">
+              {{procurementTypes.enumType}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div formGroupName="csvProperties">
+          <mat-form-field appearance="fill">
+            <mat-label> CSV Index </mat-label>
+            <input matInput type="number" placeholder="Ex. 1" formControlName="csvIndex" autocomplete="off" min="0"
+              [defaultValue]="0">
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="fill">
+          <mat-label>Multi Value Delimiters</mat-label>
+          <mat-select formControlName="multiValueDelimiter" multiple>
+            <mat-option *ngFor="let delimiter of delimiters" [value]="delimiter.name">
+              <span [style.font-weight]="'bold'">{{delimiter.name}}</span>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Delete When Not Matching</mat-label>
+          <mat-select formControlName="deleteWhenNotMatching" multiple>
+            <mat-option *ngFor="let shipmentTypes of shipmentType" [value]="shipmentTypes.name">
+              {{shipmentTypes.name}}
+            </mat-option>
+            <mat-option *ngFor="let procurementTypes of procurementType" [value]="procurementTypes.name">
+              {{procurementTypes.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div class="add-mappings-form">
+          <ng-container formArrayName="valueMapping">
+            <h4>Value Mapping:</h4>
+            <ng-container *ngFor="let valueMapping of valueMappings(colIndex).controls; let mapIndex = index">
+              <div class="mapping-form-row" [formGroupName]="mapIndex">
+                <mat-form-field appearance="fill">
+                  <mat-select formControlName="limbiqId" placeholder="Value Mapping Lq">
+                    <ng-container *ngIf="!!fields && !!fields.get('fieldName') && !!fields.getRawValue().fieldName && fields.getRawValue().fieldName=='mot'"><mat-option *ngFor="let item of  motType | keyvalue" [value]="item.value">
+                      {{item.key}}
+                    </mat-option>
+                  </ng-container>
+                    <mat-option *ngFor="let statuses of status | keyvalue" [value]="statuses.value">
+                      {{statuses.key}}
+                    </mat-option>
+                    <mat-option *ngFor="let incoterms of incotermType | keyvalue" [value]="incoterms.value">
+                      {{incoterms.key}}
+                    </mat-option>
+                      <mat-option *ngFor="let OnCarriages of OnCarriageType | keyvalue" [value]="OnCarriages.key">
+                      {{OnCarriages.value}}
+                    </mat-option>
+                    <mat-option *ngFor="let shipmentTypeValMaps of shipmentTypeValMap"
+                      [value]="shipmentTypeValMaps.name">
+                      {{shipmentTypeValMaps.value}}
+                    </mat-option>
+                    <!-- <mat-option *ngFor="let procurementStatuses of procurementStatus" [value]="procurementStatuses.value">
+                      {{procurementStatuses.name}}
+                    </mat-option> -->
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <input matInput formControlName="companyId" placeholder="Value Mapping Company">
+                </mat-form-field>
+                <button mat-mini-fab color="accent" (click)="removeMapping(colIndex,mapIndex)" type="button">
+                  <mat-icon class="remove-mapping-btn">delete</mat-icon>
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+          <button mat-mini-fab (click)="addNewMapping(colIndex)" type="button">
+            <mat-icon class="add-mapping-btn">add</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div>
+        <button mat-raised-button color="warn" (click)="removeColumn(colIndex)" type="button">
+          Delete Column
+        </button>
+      </div>
+    </div>
+    <br>
+    <div class="add-columns">
+      <button mat-raised-button color="primary" type="button" (click)="addNewColumn()">
+        <!-- <mat-icon class="add-column-btn">Add</mat-icon> -->
+        Add Column
+      </button>
+    </div>
+  </div>
+  <mat-divider></mat-divider>
+  <br>
+  <!---------------------------------------------------------------------------------------------------------------->
+  <!---------------------------------------------------------------------------------------------------------------->
+  <!------------------------------------------------------------------->
+  <!------------------------------------------------------------------->
+  <!-- <button mat-raised-button color="primary" (click)="addNewColumn()">Add</button> -->
+  <!-------------------------------------------------------------------------------------------------------------------->
+  <button mat-raised-button color="primary" type="submit">Submit</button>
+</form>
+<div class="form-val">
+  {{mgUI.value | json}}
+</div>
+<!-- <div formGroupName="columns">
     <div *ngFor="let column of columns.controls; let i = index">
-
       Column No: {{i}}
       <div>
-        Excel Header <input formArrayName="excelHeader">
+        Excel Header <input formControlName="excelHeader">
       </div>
-
       <div>
         Fields <input formControlName="fieldName" name="fieldName">
       </div>
       <button (click)=" deleteNewColumn(i)">Delete - {{i}}</button>
     </div>
-  </div>
-
-</form>
-<div class="form-val">
-  {{mgUI.value | json}}
-</div>
+  </div> -->

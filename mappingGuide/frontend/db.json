@@ -17,11 +17,6 @@
       "fieldName": "anything",
       "reminder": true,
       "id": 8
-    },
-    {
-      "name": "Ashik Ahamed",
-      "reminder": false,
-      "id": 9
     }
   ]
 }

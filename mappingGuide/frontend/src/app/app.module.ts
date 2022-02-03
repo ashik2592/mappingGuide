@@ -10,7 +10,10 @@ import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDialogModule} from '@angular/material/dialog';
-
+import {MatChipsModule} from '@angular/material/chips';
+import {MatIconModule} from '@angular/material/icon';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatDividerModule} from '@angular/material/divider';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -26,6 +29,7 @@ import { FormularComponent } from './components/formular/formular.component';
 import { SelectHintErrorExampleComponent } from './components/select-hint-error-example/select-hint-error-example.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DialogBoxComponent } from './components/dialog-box/dialog-box.component';
+
 
 const appRoutes: Routes = [
   { path: '', component: TasksComponent },
@@ -63,7 +67,11 @@ const appRoutes: Routes = [
     MatInputModule,
     MatButtonModule,
     MatCheckboxModule,
-    MatDialogModule
+    MatDialogModule,
+    MatChipsModule,
+    MatIconModule,
+    MatAutocompleteModule,
+    MatDividerModule
   ],
   providers: [],
   bootstrap: [AppComponent],
