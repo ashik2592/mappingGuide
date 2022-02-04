@@ -15,6 +15,7 @@ import {
   FormArray,
   FormGroup,
   FormControlName,
+  AbstractControl,
 } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Observable } from 'rxjs';
@@ -295,6 +296,10 @@ export class FormularComponent implements OnInit {
   procurementType: any = [];
   shipmentTypeValMap: any = [];
   columnFieldCategories$: Observable<columnFieldCategory[]> | undefined;
+  map = new Map<String, String>();
+  newKey: string = '';
+  newValue: string = '';
+
   // addNewMapping(): void {
   //   const addMapping = this.columns.get('valueMapping') as FormArray;
   //   addMapping.push(
@@ -388,7 +393,10 @@ export class FormularComponent implements OnInit {
   }
 
   regexFunctions(colIndex: number): FormArray {
-    return this.columns().at(colIndex).get('fields')?.get('regexToApply') as FormArray;
+    return this.columns()
+      .at(colIndex)
+      .get('fields')
+      ?.get('regexToApply') as FormArray;
   }
 
   newRegexFunc(): FormGroup {
@@ -406,14 +414,50 @@ export class FormularComponent implements OnInit {
     this.regexFunctions(colIndex).removeAt(mapIndex);
   }
 
+  isValidField(column: AbstractControl, fieldName: string): boolean {
+    const columnFormGroup = !!column ? (column as FormGroup) : null;
+    if (
+      !!columnFormGroup &&
+      !!columnFormGroup.get('fields') &&
+      !!columnFormGroup.get('fields')?.get('fieldName')
+    ) {
+      const columnFieldName = columnFormGroup
+        .get('fields')
+        ?.get('fieldName')?.value;
+
+      if (!!columnFieldName && columnFieldName === fieldName) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   valueMappings(colIndex: number): FormArray {
     return this.columns().at(colIndex).get('valueMapping') as FormArray;
   }
+  onNewKey(newKey: string) {
+    return (this.newKey = newKey);
+  }
+  onNewValue(newValue: string) {
+    return (this.newValue = newValue);
+  }
+  mapKey = this.onNewKey(this.newKey);
+  mapValue = this.onNewValue(this.newValue);
+
+  mappedMot: any = {};
+
   newMapping(): FormGroup {
     return this.fb.group({
-      limbiqId: [''],
-      companyId: [''],
-    });
+        limbiqId: [''],
+        companyId: [''],
+      
+      });
+      //return this.fb.control(this.mapKey, new FormControl(this.mapValue));
+    // this.map.set(this.mapKey, this.mapValue);
+    // this.mappedMot[this.mapKey] = this.mapValue;
+    // console.log(this.mappedMot);
+
+    //this.map.set(this.mapKey,this.mapValue)
   }
   addNewMapping(colIndex: number) {
     this.valueMappings(colIndex).push(this.newMapping());
@@ -421,6 +465,7 @@ export class FormularComponent implements OnInit {
   removeMapping(colIndex: number, mapIndex: number) {
     this.valueMappings(colIndex).removeAt(mapIndex);
   }
+
   // get columnArray(): FormArray {
   //   return <FormArray>this.mgUI.get('columns');
   // }
