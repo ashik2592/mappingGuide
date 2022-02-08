@@ -28,6 +28,24 @@ interface Group {
   name: string;
   id: string;
 }
+
+interface MOT {
+  //name: string;
+  //value: string;
+}
+
+interface Status {
+  name: string;
+  value: string;
+}
+interface Incoterm {
+  name: string;
+  value: string;
+}
+interface OnCarriage {
+  name: string;
+  value: string;
+}
 interface ShipmentTypeValMap {
   name: string;
   value: string;
@@ -51,9 +69,10 @@ interface columnFieldCategory {
   styleUrls: ['./formular.component.css'],
 })
 export class FormularComponent implements OnInit {
+  @Input() columnFieldCategories!: any[];
   mgUI!: FormGroup;
   type!: FormGroup;
-  //fields!: FormArray;
+  fields?: FormGroup;
   valueMapping?: any;
   selectedId!: string;
   newID!: string;
@@ -70,6 +89,24 @@ export class FormularComponent implements OnInit {
     { name: 'Ashik', id: 'limbiq.com-ashikcorp' },
     { name: 'Nina', id: 'limbiq.com-onboardingconsignee' },
   ];
+  // mots: MOT[] = [
+  //   { value: 'AIR', name: 'Air' },
+  //   { value: 'SEA', name: 'Sea' },
+  //   { value: 'SEA_AIR', name: 'Sea-Air' },
+  //   { value: 'TRUCK', name: 'Truck' },
+  //   { value: 'RAIL', name: 'Rail' },
+  // ];
+  // mots: MOT[] = [
+  //   {
+  //     mots: {
+  //       Air: 'AIR',
+  //       Sea: 'SEA',
+  //       'Sea-Air': 'SEA_AIR',
+  //       Truck: 'TRUCK',
+  //       Rail: 'RAIL',
+  //     },
+  //   },
+  // ];
   mots: { [key: string]: string } = {
     Air: 'AIR',
     Sea: 'SEA',
@@ -77,6 +114,7 @@ export class FormularComponent implements OnInit {
     Truck: 'TRUCK',
     Rail: 'RAIL',
   };
+
   shipmentStatuses: { [key: string]: string } = {
     CARGO_PLANNED: 'Cargo Planned',
     CARGO_READY: 'Cargo Ready',
@@ -109,6 +147,7 @@ export class FormularComponent implements OnInit {
     SHIPPED_FROM_POD_TO_DESTINATION: 'Shipped from POD',
     ARRIVED_AT_DESTINATION: 'Arrived at Destination',
   };
+
   incoterms: { [key: string]: string } = {
     EXW: 'EXW',
     FCA: 'FCA',
@@ -131,6 +170,7 @@ export class FormularComponent implements OnInit {
     RAIL: 'Rail',
     RAIL_TRUCK: 'Rail - Truck',
   };
+
   shipmentTypesValMaps: ShipmentTypeValMap[] = [
     { name: 'FCL         ', value: 'FCL' },
     { name: 'LCL         ', value: 'LCL' },
@@ -161,17 +201,13 @@ export class FormularComponent implements OnInit {
     { name: '\\s' },
   ];
   entityControl = new FormControl('', Validators.required);
-  visible = true;
-  selectable = true;
-  removable = true;
-  addOnBlur = false;
   separatorKeysCodes: number[] = [ENTER, COMMA];
   headerCtrl = new FormControl();
   filteredheaders: Observable<string[]>;
-  headers: any[] = [];
-  allheaders: any[] = ['MOT', '20//', '40//', '40// HC', '20// HC'];
-  @ViewChild('headerInput') headerInput!: ElementRef;
-  //@ViewChild('headerInput') headerInput!: ElementRef<HTMLInputElement>;
+  headers: string[] = ['POD'];
+  allheaders: string[] = ['MOT', '20//', '40//', '40// HC', '20// HC'];
+  @ViewChild('headerInput') headerInput!: ElementRef<HTMLInputElement>;
+
   constructor(private fb: FormBuilder, private tasks: TaskService) {
     this.filteredheaders = this.headerCtrl.valueChanges.pipe(
       startWith(null),
@@ -180,6 +216,13 @@ export class FormularComponent implements OnInit {
       )
     );
   }
+  // regexGroup(): FormGroup {
+  //   return this.fb.group({
+  //     regexToSearch: '',
+  //     replaceWith: '',
+  //     useMatchedValue: false,
+  //   });
+  // }
   ngOnInit() {
     this.entity = this.tasks.entity();
     this.shipment = this.tasks.shipment();
@@ -206,31 +249,35 @@ export class FormularComponent implements OnInit {
       return this.newType;
     });
     this.type.get('name')?.valueChanges.subscribe((value) => {
-      this.newName = this.newID[0] + '_' + this.newType + '_' + value;
+      this.newName = this.newID[0] + '_' + this.newType[0] + '_' + value ;
+      console.log(this.newName);
     });
+    // this.type.get('_id')?.patchValue({
+    //   _id: this.newName
+    // })
   }
   add(event: MatChipInputEvent): void {
-    const input = event.input;
-    const value = event.value;
+    const value = (event.value || '').trim();
     // Add our header
-    if ((value || '').trim()) {
-      this.headers.push(value.trim());
+    if (value) {
+      this.headers.push(value);
     }
     // Clear the input value
-    if (input) {
-      input.value = '';
-    }
+    event.chipInput!.clear();
     this.headerCtrl.setValue(null);
   }
-  remove(header: any, indx: number): void {
-    this.headers.splice(indx, 1);
+  remove(header: string): void {
+    const index = this.headers.indexOf(header);
+    if (index >= 0) {
+      this.headers.splice(index, 1);
+    }
   }
   selected(event: MatAutocompleteSelectedEvent): void {
-    this.headers.push(event.option.value);
+    this.headers.push(event.option.viewValue);
     this.headerInput.nativeElement.value = '';
     this.headerCtrl.setValue(null);
   }
-  private _filter(value: any): any[] {
+  private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
     return this.allheaders.filter((header) =>
       header.toLowerCase().includes(filterValue)
@@ -248,9 +295,25 @@ export class FormularComponent implements OnInit {
   procurementStatus: any = [];
   procurementType: any = [];
   shipmentTypeValMap: any = [];
+  columnFieldCategories$: Observable<columnFieldCategory[]> | undefined;
   map = new Map<String, String>();
   newKey: string = '';
   newValue: string = '';
+
+  // addNewMapping(): void {
+  //   const addMapping = this.columns.get('valueMapping') as FormArray;
+  //   addMapping.push(
+  //     this.fb.group({
+  //       limbiqId: [''],
+  //       companyId: [''],
+  //     })
+  //   );
+  // }
+  // deleteNewMapping(index: number) {
+  //   // const deleteColumn = this.mgUI.get('columns') as FormArray;
+  //   const deleteColumn = this.columns.get('valueMapping') as FormArray;
+  //   deleteColumn.removeAt(index);
+  // }
   onSelect(entity: any) {
     let entity_id: any;
     if (entity === 'shipment') {
@@ -264,58 +327,62 @@ export class FormularComponent implements OnInit {
     this.procurement = this.tasks
       .procurement()
       .filter((e) => e.entity_id == entity_id);
+
     return (this.entityValue = entity);
   }
   onChange(shipment: any, procurement: any) {
+    console.log(shipment);
+    //console.log(this.shipmentType);
     this.shipmentType = this.tasks
       .shipment()
       .filter((e) => e.fieldName == shipment);
     this.procurementType = this.tasks
       .procurement()
       .filter((e) => e.fieldName == procurement);
+
     if ((shipment || procurement) === 'mot') {
       this.motType = this.mots;
+      //this.status = this.mots;
     } else if ((shipment || procurement) === 'incoterm') {
       this.incotermType = this.incoterms;
+      //this.status = this.incoterms;
     } else if (this.entityValue === 'shipment' && shipment === 'onCarriage') {
       this.OnCarriageType = this.OnCarriages;
+      //this.status = this.OnCarriages;
     } else if (shipment === 'shipmentType') {
       this.shipmentTypeValMap = this.shipmentTypesValMaps;
+      //this.status= this.shipmentTypesValMaps;
     } else if (this.entityValue === 'procurement') {
       this.status = this.procurementStatuses;
     } else if (this.entityValue === 'shipment') {
       this.status = this.shipmentStatuses;
     }
+    //delete this.motType;
+
+    console.log(this.entityValue);
   }
   columns(): FormArray {
     return this.mgUI.get('columns') as FormArray;
   }
   newColumn(): FormGroup {
     return this.fb.group({
-      name: this.fb.array([this.fb.control('')]),
-      fields: this.fb.array([]),
+      name: this.headerCtrl,
+      fields: this.fb.group({
+        fieldName: ['', Validators.required],
+        //regexToApply: this.fb.group(this.regexGroup()),
+        regexToApply: this.fb.array([]),
+      }),
       type: ['', Validators.required],
       csvProperties: this.fb.group({
         csvIndex: '',
       }),
-      primaryKey: false,
       primaryKeyOrder: [''],
       primaryKeyField: [''],
-      defaultValue: [''],
-      externalIdOrder: [''],
-      prefix: [''],
-      suffix: [''],
-      exportCategory: this.fb.array([this.fb.control('')]),
-      excludeFromIdentifier: this.fb.array([this.fb.control('')]),
-      exportable: false,
-      showOnlyDate: false,
-      showOnlyTime: false,
       multiValueDelimiter: [''],
       deleteWhenNotMatching: [''],
       description: [''],
       enumType: '',
-      valueMapping: '',
-      valueMappings: this.fb.array([]),
+      valueMapping: this.fb.array([]),
     });
   }
   addNewColumn() {
@@ -324,35 +391,14 @@ export class FormularComponent implements OnInit {
   removeColumn(colIndex: number) {
     this.columns().removeAt(colIndex);
   }
-  newExcelHeaders(colIndex: number): FormArray {
-    return this.columns().at(colIndex).get('name') as FormArray;
+
+  regexFunctions(colIndex: number): FormArray {
+    return this.columns()
+      .at(colIndex)
+      .get('fields')
+      ?.get('regexToApply') as FormArray;
   }
-  addNewHeader(colIndex: number) {
-    this.newExcelHeaders(colIndex).push(this.fb.control(''));
-  }
-  removeHeader(colIndex: number, hrdIndex: number) {
-    this.newExcelHeaders(colIndex).removeAt(hrdIndex);
-  }
-  fieldFunctions(colIndex: number): FormArray {
-    return this.columns().at(colIndex).get('fields') as FormArray;
-  }
-  newFieldFunc(): FormGroup {
-    return this.fb.group({
-      fieldName: ['', Validators.required],
-      regexToApply: this.fb.array([]),
-    });
-  }
-  addNewField(colIndex: number) {
-    this.fieldFunctions(colIndex).push(this.newFieldFunc());
-  }
-  removeFields(colIndex: number, fieldIndex: number) {
-    this.fieldFunctions(colIndex).removeAt(fieldIndex);
-  }
-  regexFunctions(colIndex: number, fieldIndex: number): FormArray {
-    return (this.columns().at(colIndex).get('fields') as FormArray)
-      .at(fieldIndex)
-      .get('regexToApply') as FormArray;
-  }
+
   newRegexFunc(): FormGroup {
     return this.fb.group({
       regexToSearch: '',
@@ -360,58 +406,34 @@ export class FormularComponent implements OnInit {
       useMatchedValue: false,
     });
   }
-  addNewRegex(colIndex: number, fieldIndex: number) {
-    const regexField = (this.columns().at(colIndex).get('fields') as FormArray)
-      .at(fieldIndex)
-      .get('regexToApply') as FormArray;
-    regexField.push(this.newRegexFunc());
+
+  addNewRegex(colIndex: number) {
+    this.regexFunctions(colIndex).push(this.newRegexFunc());
   }
-  removeRegex(colIndex: number, fieldIndex: number, mapIndex: number) {
-    const regexField = (this.columns().at(colIndex).get('fields') as FormArray)
-      .at(fieldIndex)
-      .get('regexToApply') as FormArray;
-    regexField.removeAt(mapIndex);
+  removeRegex(colIndex: number, mapIndex: number) {
+    this.regexFunctions(colIndex).removeAt(mapIndex);
   }
-  exportCategory(colIndex: number): FormArray {
-    return this.columns().at(colIndex).get('exportCategory') as FormArray;
-  }
-  addNewExport(colIndex: number) {
-    this.exportCategory(colIndex).push(this.fb.control(''));
-  }
-  removeExport(colIndex: number, expIndex: number) {
-    this.exportCategory(colIndex).removeAt(expIndex);
-  }
-  excludeFromIdentifiers(colIndex: number): FormArray {
-    return this.columns()
-      .at(colIndex)
-      .get('excludeFromIdentifier') as FormArray;
-  }
-  addNewIdentifier(colIndex: number) {
-    this.excludeFromIdentifiers(colIndex).push(this.fb.control(''));
-  }
-  removeIdentifier(colIndex: number, idnIndex: number) {
-    this.excludeFromIdentifiers(colIndex).removeAt(idnIndex);
-  }
+
   isValidField(column: AbstractControl, fieldName: string): boolean {
     const columnFormGroup = !!column ? (column as FormGroup) : null;
-    //const columnFormGroup = this.mgUI.get('columns');
     if (
       !!columnFormGroup &&
       !!columnFormGroup.get('fields') &&
       !!columnFormGroup.get('fields')?.get('fieldName')
     ) {
-      const columnFieldName = this.shipment;
-      // const columnFieldName = columnFormGroup
-      //   .get('fields')
-      //   ?.get('fieldName')?.value;
+      const columnFieldName = columnFormGroup
+        .get('fields')
+        ?.get('fieldName')?.value;
+
       if (!!columnFieldName && columnFieldName === fieldName) {
         return true;
       }
     }
     return false;
   }
+
   valueMappings(colIndex: number): FormArray {
-    return this.columns().at(colIndex).get('valueMappings') as FormArray;
+    return this.columns().at(colIndex).get('valueMapping') as FormArray;
   }
   onNewKey(newKey: string) {
     return (this.newKey = newKey);
@@ -421,12 +443,21 @@ export class FormularComponent implements OnInit {
   }
   mapKey = this.onNewKey(this.newKey);
   mapValue = this.onNewValue(this.newValue);
+
   mappedMot: any = {};
+
   newMapping(): FormGroup {
     return this.fb.group({
-      limbiqId: [''],
-      companyId: [''],
-    });
+        limbiqId: [''],
+        companyId: [''],
+      
+      });
+      //return this.fb.control(this.mapKey, new FormControl(this.mapValue));
+    // this.map.set(this.mapKey, this.mapValue);
+    // this.mappedMot[this.mapKey] = this.mapValue;
+    // console.log(this.mappedMot);
+
+    //this.map.set(this.mapKey,this.mapValue)
   }
   addNewMapping(colIndex: number) {
     this.valueMappings(colIndex).push(this.newMapping());
@@ -434,37 +465,73 @@ export class FormularComponent implements OnInit {
   removeMapping(colIndex: number, mapIndex: number) {
     this.valueMappings(colIndex).removeAt(mapIndex);
   }
-  updateValueMappingKeyInFormControl(column: AbstractControl, value: any) {
-    const columnFormGroup = !!column ? (column as FormGroup) : null;
-    if (!!columnFormGroup && !!columnFormGroup.get('valueMapping')) {
-      let columnFieldName = columnFormGroup.get('valueMapping')?.value;
-      if (!columnFieldName) {
-        columnFieldName = {};
-      }
-      columnFieldName[value] = '';
-      columnFormGroup.get('valueMapping')?.patchValue(columnFieldName);
-    }
-  }
-  updateValueMappingValueInFormControl(
-    column: AbstractControl,
-    value: any,
-    colIndex: number,
-    mapIndex: number
-  ) {
-    const columnFormGroup = !!column ? (column as FormGroup) : null;
-    if (!!columnFormGroup && !!columnFormGroup.get('valueMapping')) {
-      let columnFieldName = columnFormGroup.get('valueMapping')?.value;
-      if (!columnFieldName) {
-        columnFieldName = {};
-      }
-      columnFieldName[
-        (this.valueMappings(colIndex).at(mapIndex) as FormGroup).get(
-          'limbiqId'
-        )?.value
-      ] = value;
-      columnFormGroup.get('valueMapping')?.patchValue(columnFieldName);
-    }
-  }
+
+  // get columnArray(): FormArray {
+  //   return <FormArray>this.mgUI.get('columns');
+  // }
+  // addColumn(): void {
+  //   this.columnArray.push(this.addColumnGroup());
+  //   console.log(this.columnArray);
+  // }
+  // removeColumn(index: number): void {
+  //   this.columnArray.removeAt(index);
+  // }
+  // addMapping(index: number): void {
+  //   (<FormArray>(
+  //     (<FormGroup>this.columnArray.controls[index]).controls['valueMapping']
+  //   )).push(this.Mapping());
+  // }
+  // addRegex(regexIndex: number): void {
+  //   const addRegexValue = <FormArray>(
+  //     (<FormGroup>this.columnArray.controls[regexIndex]).controls[
+  //       'regexToApply'
+  //     ]
+  //   );
+  //   addRegexValue.push(this.regexGroup());
+  // }
+  // deleteRegex(regexIndex: number): void {
+  //   const delRegexValue = <FormArray>(
+  //     (<FormGroup>this.columnArray.controls[regexIndex]).controls[
+  //       'regexToApply'
+  //     ]
+  //   );
+  //   delRegexValue.removeAt(regexIndex);
+  // }
+  // get valueMapping(): FormArray {
+  //   return <FormArray>this.mgUI.get('columns');
+  //   //return this.mgUI.controls['columns'].get('valueMapping') as FormArray
+  //   //return this.columns.get("valueMapping") as FormArray
+  //   //return this.columns.controls["valueMapping"] as FormArray
+  // }
+  // addMapping() {
+  //   // const valueMappingForm = this.fb.group({
+  //   //   limbiqId: [''],
+  //   //   companyId: [''],
+  //   // });
+  //   this.valueMapping.push(this.valueMappingForm);
+  // }
+  // deleteMapping(mappingIndex: number) {
+  //   //const removeMapping = this.columns.get('valueMapping') as FormArray;
+  //   //removeMapping.removeAt(mappingIndex);
+  //   this.valueMapping.removeAt(mappingIndex);
+  // }
+  // get regexFunc() {
+  //   return this.mgUI.controls['columns'] as FormArray;
+  //   //return this.mgUI.controls["columns"] as FormArray
+  // }
+  // regexFuncs = this.mgUI.controls["columns"].get('fields') as FormArray
+  // // addRegex() {
+  // //   const regexToApply = this.fb.group({
+  // //     regexToSearch: [''],
+  // //     replaceWith: [''],
+  // //   });
+  // //   this.regexFunc.push(regexToApply);
+  // // }
+  // // deleteRegex(regexIndex: number) {
+  // //   //const removeMapping = this.columns.get('valueMapping') as FormArray;
+  // //   //removeMapping.removeAt(mappingIndex);
+  // //   this.regexFunc.removeAt(regexIndex);
+  // // }
   onSubmit() {
     console.warn(this.mgUI.value);
   }

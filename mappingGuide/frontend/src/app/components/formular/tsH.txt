@@ -28,6 +28,24 @@ interface Group {
   name: string;
   id: string;
 }
+
+interface MOT {
+  //name: string;
+  //value: string;
+}
+
+interface Status {
+  name: string;
+  value: string;
+}
+interface Incoterm {
+  name: string;
+  value: string;
+}
+interface OnCarriage {
+  name: string;
+  value: string;
+}
 interface ShipmentTypeValMap {
   name: string;
   value: string;
@@ -51,6 +69,7 @@ interface columnFieldCategory {
   styleUrls: ['./formular.component.css'],
 })
 export class FormularComponent implements OnInit {
+  
   mgUI!: FormGroup;
   type!: FormGroup;
   //fields!: FormArray;
@@ -70,6 +89,7 @@ export class FormularComponent implements OnInit {
     { name: 'Ashik', id: 'limbiq.com-ashikcorp' },
     { name: 'Nina', id: 'limbiq.com-onboardingconsignee' },
   ];
+
   mots: { [key: string]: string } = {
     Air: 'AIR',
     Sea: 'SEA',
@@ -77,6 +97,7 @@ export class FormularComponent implements OnInit {
     Truck: 'TRUCK',
     Rail: 'RAIL',
   };
+
   shipmentStatuses: { [key: string]: string } = {
     CARGO_PLANNED: 'Cargo Planned',
     CARGO_READY: 'Cargo Ready',
@@ -109,6 +130,7 @@ export class FormularComponent implements OnInit {
     SHIPPED_FROM_POD_TO_DESTINATION: 'Shipped from POD',
     ARRIVED_AT_DESTINATION: 'Arrived at Destination',
   };
+
   incoterms: { [key: string]: string } = {
     EXW: 'EXW',
     FCA: 'FCA',
@@ -131,6 +153,7 @@ export class FormularComponent implements OnInit {
     RAIL: 'Rail',
     RAIL_TRUCK: 'Rail - Truck',
   };
+
   shipmentTypesValMaps: ShipmentTypeValMap[] = [
     { name: 'FCL         ', value: 'FCL' },
     { name: 'LCL         ', value: 'LCL' },
@@ -172,6 +195,7 @@ export class FormularComponent implements OnInit {
   allheaders: any[] = ['MOT', '20//', '40//', '40// HC', '20// HC'];
   @ViewChild('headerInput') headerInput!: ElementRef;
   //@ViewChild('headerInput') headerInput!: ElementRef<HTMLInputElement>;
+
   constructor(private fb: FormBuilder, private tasks: TaskService) {
     this.filteredheaders = this.headerCtrl.valueChanges.pipe(
       startWith(null),
@@ -180,6 +204,7 @@ export class FormularComponent implements OnInit {
       )
     );
   }
+
   ngOnInit() {
     this.entity = this.tasks.entity();
     this.shipment = this.tasks.shipment();
@@ -206,12 +231,17 @@ export class FormularComponent implements OnInit {
       return this.newType;
     });
     this.type.get('name')?.valueChanges.subscribe((value) => {
-      this.newName = this.newID[0] + '_' + this.newType + '_' + value;
+      this.newName = this.newID[0] + '_' + this.newType[0] + '_' + value;
+      console.log(this.newName);
     });
+    // this.type.get('_id')?.patchValue({
+    //   _id: this.newName
+    // })
   }
   add(event: MatChipInputEvent): void {
     const input = event.input;
     const value = event.value;
+
     // Add our header
     if ((value || '').trim()) {
       this.headers.push(value.trim());
@@ -251,6 +281,7 @@ export class FormularComponent implements OnInit {
   map = new Map<String, String>();
   newKey: string = '';
   newValue: string = '';
+
   onSelect(entity: any) {
     let entity_id: any;
     if (entity === 'shipment') {
@@ -264,36 +295,51 @@ export class FormularComponent implements OnInit {
     this.procurement = this.tasks
       .procurement()
       .filter((e) => e.entity_id == entity_id);
+
     return (this.entityValue = entity);
   }
   onChange(shipment: any, procurement: any) {
+    console.log(shipment);
+    //console.log(this.shipmentType);
     this.shipmentType = this.tasks
       .shipment()
       .filter((e) => e.fieldName == shipment);
     this.procurementType = this.tasks
       .procurement()
       .filter((e) => e.fieldName == procurement);
+
     if ((shipment || procurement) === 'mot') {
       this.motType = this.mots;
+      //this.status = this.mots;
     } else if ((shipment || procurement) === 'incoterm') {
       this.incotermType = this.incoterms;
+      //this.status = this.incoterms;
     } else if (this.entityValue === 'shipment' && shipment === 'onCarriage') {
       this.OnCarriageType = this.OnCarriages;
+      //this.status = this.OnCarriages;
     } else if (shipment === 'shipmentType') {
       this.shipmentTypeValMap = this.shipmentTypesValMaps;
+      //this.status= this.shipmentTypesValMaps;
     } else if (this.entityValue === 'procurement') {
       this.status = this.procurementStatuses;
     } else if (this.entityValue === 'shipment') {
       this.status = this.shipmentStatuses;
     }
+    //delete this.motType;
+
+    console.log(this.entityValue);
   }
   columns(): FormArray {
     return this.mgUI.get('columns') as FormArray;
   }
   newColumn(): FormGroup {
     return this.fb.group({
-      name: this.fb.array([this.fb.control('')]),
+      name: [''],
       fields: this.fb.array([]),
+      // fields: this.fb.group({
+      //   fieldName: ['', Validators.required],
+      //   regexToApply: this.fb.array([]),
+      // }),
       type: ['', Validators.required],
       csvProperties: this.fb.group({
         csvIndex: '',
@@ -303,10 +349,6 @@ export class FormularComponent implements OnInit {
       primaryKeyField: [''],
       defaultValue: [''],
       externalIdOrder: [''],
-      prefix: [''],
-      suffix: [''],
-      exportCategory: this.fb.array([this.fb.control('')]),
-      excludeFromIdentifier: this.fb.array([this.fb.control('')]),
       exportable: false,
       showOnlyDate: false,
       showOnlyTime: false,
@@ -315,7 +357,7 @@ export class FormularComponent implements OnInit {
       description: [''],
       enumType: '',
       valueMapping: '',
-      valueMappings: this.fb.array([]),
+        valueMappings: this.fb.array([]),
     });
   }
   addNewColumn() {
@@ -324,15 +366,7 @@ export class FormularComponent implements OnInit {
   removeColumn(colIndex: number) {
     this.columns().removeAt(colIndex);
   }
-  newExcelHeaders(colIndex: number): FormArray {
-    return this.columns().at(colIndex).get('name') as FormArray;
-  }
-  addNewHeader(colIndex: number) {
-    this.newExcelHeaders(colIndex).push(this.fb.control(''));
-  }
-  removeHeader(colIndex: number, hrdIndex: number) {
-    this.newExcelHeaders(colIndex).removeAt(hrdIndex);
-  }
+  
   fieldFunctions(colIndex: number): FormArray {
     return this.columns().at(colIndex).get('fields') as FormArray;
   }
@@ -348,11 +382,15 @@ export class FormularComponent implements OnInit {
   removeFields(colIndex: number, fieldIndex: number) {
     this.fieldFunctions(colIndex).removeAt(fieldIndex);
   }
-  regexFunctions(colIndex: number, fieldIndex: number): FormArray {
-    return (this.columns().at(colIndex).get('fields') as FormArray)
-      .at(fieldIndex)
-      .get('regexToApply') as FormArray;
+  regexFunctions( colIndex:number, fieldIndex: number): FormArray {
+    // return this.columns()
+    //   .at(fieldIndex)
+    //   .get('fields')
+    //   ?.get('regexToApply') as FormArray;
+
+    return (this.columns().at(colIndex).get('fields') as FormArray).at(fieldIndex).get('regexToApply') as FormArray
   }
+
   newRegexFunc(): FormGroup {
     return this.fb.group({
       regexToSearch: '',
@@ -360,56 +398,36 @@ export class FormularComponent implements OnInit {
       useMatchedValue: false,
     });
   }
-  addNewRegex(colIndex: number, fieldIndex: number) {
-    const regexField = (this.columns().at(colIndex).get('fields') as FormArray)
-      .at(fieldIndex)
-      .get('regexToApply') as FormArray;
+
+  addNewRegex( colIndex:number, fieldIndex: number) {
+    const regexField = (this.columns().at(colIndex).get('fields') as FormArray).at(fieldIndex).get('regexToApply') as FormArray
+
     regexField.push(this.newRegexFunc());
   }
-  removeRegex(colIndex: number, fieldIndex: number, mapIndex: number) {
-    const regexField = (this.columns().at(colIndex).get('fields') as FormArray)
-      .at(fieldIndex)
-      .get('regexToApply') as FormArray;
+  removeRegex(colIndex:number,fieldIndex: number, mapIndex: number) {
+    const regexField = (this.columns().at(colIndex).get('fields') as FormArray).at(fieldIndex).get('regexToApply') as FormArray
+
     regexField.removeAt(mapIndex);
   }
-  exportCategory(colIndex: number): FormArray {
-    return this.columns().at(colIndex).get('exportCategory') as FormArray;
-  }
-  addNewExport(colIndex: number) {
-    this.exportCategory(colIndex).push(this.fb.control(''));
-  }
-  removeExport(colIndex: number, expIndex: number) {
-    this.exportCategory(colIndex).removeAt(expIndex);
-  }
-  excludeFromIdentifiers(colIndex: number): FormArray {
-    return this.columns()
-      .at(colIndex)
-      .get('excludeFromIdentifier') as FormArray;
-  }
-  addNewIdentifier(colIndex: number) {
-    this.excludeFromIdentifiers(colIndex).push(this.fb.control(''));
-  }
-  removeIdentifier(colIndex: number, idnIndex: number) {
-    this.excludeFromIdentifiers(colIndex).removeAt(idnIndex);
-  }
+
   isValidField(column: AbstractControl, fieldName: string): boolean {
     const columnFormGroup = !!column ? (column as FormGroup) : null;
-    //const columnFormGroup = this.mgUI.get('columns');
     if (
       !!columnFormGroup &&
       !!columnFormGroup.get('fields') &&
       !!columnFormGroup.get('fields')?.get('fieldName')
     ) {
-      const columnFieldName = this.shipment;
-      // const columnFieldName = columnFormGroup
-      //   .get('fields')
-      //   ?.get('fieldName')?.value;
+      const columnFieldName = columnFormGroup
+        .get('fields')
+        ?.get('fieldName')?.value;
+
       if (!!columnFieldName && columnFieldName === fieldName) {
         return true;
       }
     }
     return false;
   }
+
   valueMappings(colIndex: number): FormArray {
     return this.columns().at(colIndex).get('valueMappings') as FormArray;
   }
@@ -421,12 +439,20 @@ export class FormularComponent implements OnInit {
   }
   mapKey = this.onNewKey(this.newKey);
   mapValue = this.onNewValue(this.newValue);
+
   mappedMot: any = {};
+
   newMapping(): FormGroup {
     return this.fb.group({
       limbiqId: [''],
       companyId: [''],
     });
+    //return this.fb.control(this.mapKey, new FormControl(this.mapValue));
+    // this.map.set(this.mapKey, this.mapValue);
+    // this.mappedMot[this.mapKey] = this.mapValue;
+    // console.log(this.mappedMot);
+
+    //this.map.set(this.mapKey,this.mapValue)
   }
   addNewMapping(colIndex: number) {
     this.valueMappings(colIndex).push(this.newMapping());
@@ -436,8 +462,12 @@ export class FormularComponent implements OnInit {
   }
   updateValueMappingKeyInFormControl(column: AbstractControl, value: any) {
     const columnFormGroup = !!column ? (column as FormGroup) : null;
-    if (!!columnFormGroup && !!columnFormGroup.get('valueMapping')) {
+    if (
+      !!columnFormGroup &&
+      !!columnFormGroup.get('valueMapping')
+    ) {
       let columnFieldName = columnFormGroup.get('valueMapping')?.value;
+
       if (!columnFieldName) {
         columnFieldName = {};
       }
@@ -445,23 +475,19 @@ export class FormularComponent implements OnInit {
       columnFormGroup.get('valueMapping')?.patchValue(columnFieldName);
     }
   }
-  updateValueMappingValueInFormControl(
-    column: AbstractControl,
-    value: any,
-    colIndex: number,
-    mapIndex: number
-  ) {
+
+  updateValueMappingValueInFormControl(column: AbstractControl, value: any, colIndex:number, mapIndex: number) {
     const columnFormGroup = !!column ? (column as FormGroup) : null;
-    if (!!columnFormGroup && !!columnFormGroup.get('valueMapping')) {
+    if (
+      !!columnFormGroup &&
+      !!columnFormGroup.get('valueMapping')
+    ) {
       let columnFieldName = columnFormGroup.get('valueMapping')?.value;
+
       if (!columnFieldName) {
         columnFieldName = {};
       }
-      columnFieldName[
-        (this.valueMappings(colIndex).at(mapIndex) as FormGroup).get(
-          'limbiqId'
-        )?.value
-      ] = value;
+      columnFieldName[(this.valueMappings(colIndex).at(mapIndex) as FormGroup).get('limbiqId')?.value] = value;
       columnFormGroup.get('valueMapping')?.patchValue(columnFieldName);
     }
   }

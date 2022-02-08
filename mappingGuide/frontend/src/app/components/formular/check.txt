@@ -52,8 +52,8 @@
     <div *ngFor="let column of columns().controls; let colIndex = index">
       <h3>Columns</h3>
       <div [formGroupName]="colIndex">
-        <!-- <div>
-          <mat-form-field class="example-chip-list" appearance="fill">
+        <div>
+          <!-- <mat-form-field class="example-chip-list" appearance="fill">
             <mat-label>Excel Header</mat-label>
             <mat-chip-list #chipList aria-label="Header Selecetion">
               <mat-chip *ngFor="let header of headers" (removed)="remove(header)">
@@ -71,7 +71,7 @@
                 {{header}}
               </mat-option>
             </mat-autocomplete>
-          </mat-form-field>
+          </mat-form-field> -->
           <mat-form-field class="example-chip-list" appearance="fill">
             <mat-label>Excel Header</mat-label>
             <mat-chip-list #chipList>
@@ -91,22 +91,7 @@
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>
-        </div> -->
-        <ng-container formArrayName="name">
-          <h4>Headers:</h4>
-          <ng-container *ngFor="let alias of newExcelHeaders(colIndex).controls; let hrdIndex=index">
-            <mat-form-field appearance="fill">
-              <mat-label>Excel Header</mat-label>
-              <input matInput type="text" [formControlName]="hrdIndex" placeholder="enter a new Excel Header">
-            </mat-form-field>
-            <button mat-icon-button type="button" color="warn" (click)="removeHeader(colIndex, hrdIndex)">
-              <mat-icon>indeterminate_check_box</mat-icon>
-            </button>
-          </ng-container>
-          <button mat-icon-button type="button" color="primary" (click)="addNewHeader(colIndex)">
-            <mat-icon>add</mat-icon>
-          </button>
-        </ng-container>
+        </div>
         <div class="add-Fields-form">
           <ng-container formArrayName="fields">
             <h4>Fields:</h4>
@@ -126,8 +111,7 @@
                 <div class="add-Regexs-form">
                   <ng-container formArrayName="regexToApply">
                     <h4>Regex Function:</h4>
-                    <ng-container
-                      *ngFor="let regexFunc of regexFunctions(colIndex,fieldIndex).controls; let mapIndex = index">
+                    <ng-container *ngFor="let regexFunc of regexFunctions(colIndex,fieldIndex).controls; let mapIndex = index">
                       <div class="mapping-form-row" [formGroupName]="mapIndex">
                         <mat-form-field appearance="fill">
                           <input matInput formControlName="regexToSearch" placeholder="regex">
@@ -138,16 +122,15 @@
                         <p>
                           <mat-checkbox formControlName="useMatchedValue">Use Match Value</mat-checkbox>
                         </p>
-                        <button mat-mini-fab color="accent" (click)="removeRegex(colIndex,fieldIndex,mapIndex)"
-                          type="button">
+                        <button mat-mini-fab color="accent" (click)="removeRegex(colIndex,fieldIndex,mapIndex)" type="button">
                           <mat-icon class="remove-mapping-btn">delete</mat-icon>
-                        </button>
+                        </button> 
                       </div>
                     </ng-container>
                   </ng-container>
-                  <button mat-mini-fab type="button" (click)="addNewRegex(colIndex,fieldIndex)">
+                   <button mat-mini-fab type="button" (click)="addNewRegex(colIndex,fieldIndex)">
                     <mat-icon class="add-mapping-btn">add</mat-icon>
-                  </button>
+                  </button> 
                 </div>
                 <button mat-mini-fab color="accent" (click)="removeFields(colIndex,fieldIndex)" type="button">
                   <mat-icon class="remove-mapping-btn">delete</mat-icon>
@@ -190,14 +173,6 @@
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="fill">
-          <mat-label>Prefix</mat-label>
-          <input matInput type="text" formControlName="prefix" placeholder="enter a prefix">
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>Sufix</mat-label>
-          <input matInput type="text" formControlName="suffix" placeholder="enter a suffix">
-        </mat-form-field>
-        <mat-form-field appearance="fill">
           <mat-label>Default Value </mat-label>
           <input matInput type="text" placeholder="Ex: Carton" formControlName="defaultValue" autocomplete="off">
         </mat-form-field>
@@ -206,36 +181,6 @@
           <input matInput type="number" placeholder="Ex. 1" formControlName="externalIdOrder" autocomplete="off"
             min="0">
         </mat-form-field>
-        <ng-container formArrayName="exportCategory">
-          <h4>Export Category:</h4>
-          <ng-container *ngFor="let alias of exportCategory(colIndex).controls; let expIndex=index">
-            <mat-form-field appearance="fill">
-              <mat-label>Export Category</mat-label>
-              <input matInput type="text" [formControlName]="expIndex" placeholder="enter a export category">
-            </mat-form-field>
-            <button mat-icon-button type="button" color="warn" (click)="removeExport(colIndex, expIndex)">
-              <mat-icon>indeterminate_check_box</mat-icon>
-            </button>
-          </ng-container>
-          <button mat-icon-button type="button" color="primary" (click)="addNewExport(colIndex)">
-            <mat-icon>add</mat-icon>
-          </button>
-        </ng-container>
-        <ng-container formArrayName="excludeFromIdentifier">
-          <h4>Exclude From Identifier:</h4>
-          <ng-container *ngFor="let alias of excludeFromIdentifiers(colIndex).controls; let idnIndex=index">
-            <mat-form-field appearance="fill">
-              <mat-label>Exclude From Identifier</mat-label>
-              <input matInput type="text" [formControlName]="idnIndex" placeholder="enter a Exclude From Identifier">
-            </mat-form-field>
-            <button mat-icon-button type="button" color="warn" (click)="removeIdentifier(colIndex, idnIndex)">
-              <mat-icon>indeterminate_check_box</mat-icon>
-            </button>
-          </ng-container>
-          <button mat-icon-button type="button" color="primary" (click)="addNewIdentifier(colIndex)">
-            <mat-icon>add</mat-icon>
-          </button>
-        </ng-container>
         <p>
           <mat-checkbox formControlName="exportable">Exportable</mat-checkbox>
         </p>
@@ -251,6 +196,7 @@
         </mat-form-field>
         <mat-form-field appearance="fill">
           <mat-label>Enum Type</mat-label>
+          <!-- <input matInput type="text" placeholder="enter a primaryKeyField"> -->
           <mat-select formControlName="enumType">
             <mat-option>--</mat-option>
             <mat-option *ngFor="let shipmentTypes of shipmentType" [value]="shipmentTypes.enumType">
@@ -293,8 +239,7 @@
             <ng-container *ngFor="let valueMapping of valueMappings(colIndex).controls; let mapIndex = index">
               <div class="mapping-form-row" [formGroupName]="mapIndex">
                 <mat-form-field appearance="fill">
-                  <mat-select formControlName="limbiqId" placeholder="Value Mapping Lq"
-                    (selectionChange)="updateValueMappingKeyInFormControl(column, $event.value)">
+                  <mat-select formControlName="limbiqId" placeholder="Value Mapping Lq" (selectionChange)="updateValueMappingKeyInFormControl(column, $event.value)">
                     <ng-container *ngIf="isValidField(column, 'mot')">
                       <mat-option *ngFor="let item of  motType | keyvalue" [value]="item.value">
                         {{item.key}}
@@ -321,12 +266,14 @@
                         {{shipmentTypeValMaps.value}}
                       </mat-option>
                     </ng-container>
+                    <!-- <mat-option *ngFor="let procurementStatuses of procurementStatus" [value]="procurementStatuses.value">
+                      {{procurementStatuses.name}}
+                    </mat-option> -->
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
-                  <input matInput #valMap
-                    (blur)="updateValueMappingValueInFormControl(column, valMap.value, colIndex, mapIndex)"
-                    formControlName="companyId" placeholder="Value Mapping Company">
+                  <input matInput #valMap (blur)="updateValueMappingValueInFormControl(column, valMap.value, colIndex, mapIndex)" formControlName="companyId"
+                    placeholder="Value Mapping Company">
                 </mat-form-field>
                 <button mat-mini-fab color="accent" (click)="removeMapping(colIndex,mapIndex)" type="button">
                   <mat-icon class="remove-mapping-btn">delete</mat-icon>
@@ -348,15 +295,34 @@
     <br>
     <div class="add-columns">
       <button mat-raised-button color="primary" type="button" (click)="addNewColumn()">
+        <!-- <mat-icon class="add-column-btn">Add</mat-icon> -->
         Add Column
       </button>
     </div>
   </div>
   <mat-divider></mat-divider>
-  <br>  
+  <br>
+  <!---------------------------------------------------------------------------------------------------------------->
+  <!---------------------------------------------------------------------------------------------------------------->
+  <!------------------------------------------------------------------->
+  <!------------------------------------------------------------------->
+  <!-- <button mat-raised-button color="primary" (click)="addNewColumn()">Add</button> -->
+  <!-------------------------------------------------------------------------------------------------------------------->
   <button mat-raised-button color="primary" type="submit">Submit</button>
 </form>
 <div class="form-val">
   {{mgUI.value | json}}
   {{headers | json}}
 </div>
+<!-- <div formGroupName="columns">
+    <div *ngFor="let column of columns.controls; let i = index">
+      Column No: {{i}}
+      <div>
+        Excel Header <input formControlName="excelHeader">
+      </div>
+      <div>
+        Fields <input formControlName="fieldName" name="fieldName">
+      </div>
+      <button (click)=" deleteNewColumn(i)">Delete - {{i}}</button>
+    </div>
+  </div> -->
