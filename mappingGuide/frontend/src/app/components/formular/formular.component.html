@@ -52,46 +52,6 @@
     <div *ngFor="let column of columns().controls; let colIndex = index">
       <h3>Columns</h3>
       <div [formGroupName]="colIndex">
-        <!-- <div>
-          <mat-form-field class="example-chip-list" appearance="fill">
-            <mat-label>Excel Header</mat-label>
-            <mat-chip-list #chipList aria-label="Header Selecetion">
-              <mat-chip *ngFor="let header of headers" (removed)="remove(header)">
-                {{header}}
-                <button matChipRemove>
-                  <mat-icon>cancel</mat-icon>
-                </button>
-              </mat-chip>
-              <input matInput placeholder="New header..." #headerInput [formControl]="headerCtrl" formControlName="name"
-                [matAutocomplete]="auto" [matChipInputFor]="chipList"
-                [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="add($event)">
-            </mat-chip-list>
-            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-              <mat-option *ngFor="let header of filteredheaders | async" [value]="header">
-                {{header}}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-          <mat-form-field class="example-chip-list" appearance="fill">
-            <mat-label>Excel Header</mat-label>
-            <mat-chip-list #chipList>
-              <mat-chip *ngFor="let header of headers; let indx = index;" [selectable]="selectable"
-                [removable]="removable" (removed)="remove(header, indx)">
-                {{header}}
-                <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-              </mat-chip>
-              <input placeholder="New header..." #headerInput [formControl]="headerCtrl" formControlName="name"
-                [matAutocomplete]="auto" [matChipInputFor]="chipList"
-                [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="addOnBlur"
-                (matChipInputTokenEnd)="add($event)" multiple>
-            </mat-chip-list>
-            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-              <mat-option *ngFor="let header of filteredheaders | async" [value]="header">
-                {{header}}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-        </div> -->
         <ng-container formArrayName="name">
           <h4>Headers:</h4>
           <ng-container *ngFor="let alias of newExcelHeaders(colIndex).controls; let hrdIndex=index">
@@ -114,7 +74,7 @@
               <div class="mapping-form-row" [formGroupName]="fieldIndex">
                 <mat-form-field appearance="fill">
                   <mat-label>Field Name</mat-label>
-                  <mat-select formControlName="fieldName" (valueChange)="onChange($event, $event)">
+                  <mat-select formControlName="fieldName" (valueChange)="onChange($event, $event)" #ref>
                     <mat-option *ngFor="let shipments of shipment" [value]="shipments.fieldName">
                       {{shipments.name}}
                     </mat-option>
@@ -123,6 +83,13 @@
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
+                <!------------------------------------referenceValue--------------------------------------------------->
+                <mat-form-field *ngIf="ref.value === 'referenceValueField'" appearance="fill">
+                  <input matInput #newRef placeholder="Additional Reference"
+                    (blur)="updateAdditionalReferenceInFormControl(column,fieldIndex, newRef.value)"
+                    formControlName="fieldNames" />
+                </mat-form-field>
+                <!----------------------------------------end---------------------------------------------------------->
                 <div class="add-Regexs-form">
                   <ng-container formArrayName="regexToApply">
                     <h4>Regex Function:</h4>
@@ -159,6 +126,135 @@
             <mat-icon class="add-mapping-btn">add</mat-icon>
           </button>
         </div>
+        <!--------------------------------------importable------------------------------------------------->
+        <div class="add-importable-form">
+          <ng-container formArrayName="importable">
+            <h4>Importable:</h4>
+            <ng-container *ngFor="let regexFunc of importableFunctions(colIndex).controls; let impIndex = index">
+              <div class="mapping-form-row" [formGroupName]="impIndex">
+                <mat-form-field appearance="fill">
+                  <mat-label>Applicable To</mat-label>
+                  <input matInput formControlName="applicableTo" placeholder="applicable to">
+                </mat-form-field>
+                <div class="add-Regexs-form">
+                  <ng-container formArrayName="when">
+                    <h4>Conditions When:</h4>
+                    <ng-container
+                      *ngFor="let regexFunc of importableCdnFunctions(colIndex,impIndex).controls; let cdnIndex = index">
+                      <div class="mapping-form-row" [formGroupName]="cdnIndex">
+                        <mat-form-field appearance="fill">
+                          <mat-label>Operation</mat-label>
+                          <input matInput formControlName="operation" placeholder="operation">
+                        </mat-form-field>
+                        <mat-form-field appearance="fill">
+                          <mat-label>Value</mat-label>
+                          <input matInput formControlName="value" placeholder="Value">
+                        </mat-form-field>
+                        <button mat-mini-fab color="accent" (click)="removeCdn(colIndex,impIndex,cdnIndex)"
+                          type="button">
+                          <mat-icon class="remove-mapping-btn">delete</mat-icon>
+                        </button>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                  <button mat-mini-fab type="button" (click)="addNewCdn(colIndex,impIndex)">
+                    <mat-icon class="add-mapping-btn">add</mat-icon>
+                  </button>
+                </div>
+                <button mat-mini-fab color="accent" (click)="removeImportable(colIndex,impIndex)" type="button">
+                  <mat-icon class="remove-mapping-btn">delete</mat-icon>
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+          <button mat-mini-fab type="button" (click)="addNewImportable(colIndex)">
+            <mat-icon class="add-mapping-btn">add</mat-icon>
+          </button>
+        </div>
+        <!-----------------------------------------end------------------------------------------------->
+        <!--------------------------------------Condition---------------------------------------------->
+        <div class="add-condition-form">
+          <ng-container formArrayName="condition">
+            <h4>Conditions:</h4>
+            <ng-container *ngFor="let regexFunc of conditionFunctions(colIndex).controls; let cdnsIndex = index">
+              <div class="mapping-form-row" [formGroupName]="cdnsIndex">
+                <div class="add-whenCdn-form">
+                  <ng-container formArrayName="when">
+                    <h4>Conditions When:</h4>
+                    <ng-container
+                      *ngFor="let cdnsFunc of conditionsFunctions(colIndex,cdnsIndex).controls; let whenIndex = index">
+                      <div class="mapping-form-row" [formGroupName]="whenIndex">
+                        <mat-form-field appearance="fill">
+                          <mat-label>Operation</mat-label>
+                          <input matInput formControlName="operation" placeholder="operation">
+                        </mat-form-field>
+                        <mat-form-field appearance="fill">
+                          <mat-label>Value</mat-label>
+                          <input matInput formControlName="value" placeholder="Value">
+                        </mat-form-field>
+                        <div class="add-RegexsCdns-form">
+                          <ng-container formArrayName="regexToApply">
+                            <h4>Condition Regex Function:</h4>
+                            <ng-container
+                              *ngFor="let regexFunc of conditionsRegexFunctions(colIndex,cdnsIndex,whenIndex).controls; let rgxIndex = index">
+                              <div class="mapping-form-row" [formGroupName]="rgxIndex">
+                                <mat-form-field appearance="fill">
+                                  <input matInput formControlName="regexToSearch" placeholder="regex">
+                                </mat-form-field>
+                                <mat-form-field appearance="fill">
+                                  <input matInput formControlName="replaceWith" placeholder="Value to replace">
+                                </mat-form-field>
+                                <p>
+                                  <mat-checkbox formControlName="useMatchedValue">Use Match Value</mat-checkbox>
+                                </p>
+                                <button mat-mini-fab color="warn" (click)="removeCdnsRegex(colIndex,cdnsIndex,whenIndex,rgxIndex)"
+                                  type="button">
+                                  <mat-icon class="remove-mapping-btn">delete</mat-icon>
+                                </button>
+                              </div>
+                            </ng-container>
+                          </ng-container>
+                          <button mat-mini-fab type="button" (click)="addNewCdnsRegex(colIndex,cdnsIndex,whenIndex)">
+                            <mat-icon class="add-mapping-btn">add</mat-icon>
+                          </button>
+                        </div>
+                        <button mat-mini-fab color="accent" (click)="removeCdns(colIndex,cdnsIndex,whenIndex)"
+                          type="button">
+                          <mat-icon class="remove-mapping-btn">delete</mat-icon>
+                        </button>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                  <button mat-mini-fab type="button" (click)="addNewCdns(colIndex,cdnsIndex)">
+                    <mat-icon class="add-mapping-btn">add</mat-icon>
+                  </button>
+                </div>
+                 <ng-container formGroupName = "then">
+                  <h4>Conditions then</h4>
+                <mat-form-field appearance="fill">
+                  <mat-label>Column Name</mat-label>
+                  <input matInput formControlName="columnName" placeholder="Column Name">
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <mat-label>Operation</mat-label>
+                  <input matInput formControlName="operation" placeholder="operation">
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <mat-label>Value</mat-label>
+                  <input matInput formControlName="value" placeholder="value">
+                </mat-form-field>
+              </ng-container> 
+                <button mat-mini-fab color="accent" (click)="removeConditions(colIndex,cdnsIndex)" type="button">
+                  <mat-icon class="remove-mapping-btn">delete</mat-icon>
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+          <button mat-mini-fab type="button" (click)="addNewConditions(colIndex)">
+            <mat-icon class="add-mapping-btn">add</mat-icon>
+          </button>
+        </div>
+        <!-----------------------------------------end------------------------------------------------->
         <mat-form-field appearance="fill">
           <mat-label>Type</mat-label>
           <mat-select required formControlName="type">
@@ -295,31 +391,33 @@
                 <mat-form-field appearance="fill">
                   <mat-select formControlName="limbiqId" placeholder="Value Mapping Lq"
                     (selectionChange)="updateValueMappingKeyInFormControl(column, $event.value)">
-                    <ng-container *ngIf="isValidField(column, 'mot')">
-                      <mat-option *ngFor="let item of  motType | keyvalue" [value]="item.value">
-                        {{item.key}}
-                      </mat-option>
-                    </ng-container>
-                    <ng-container *ngIf="isValidField(column, 'status')">
-                      <mat-option *ngFor="let statuses of status | keyvalue" [value]="statuses.value">
-                        {{statuses.key}}
-                      </mat-option>
-                    </ng-container>
-                    <ng-container *ngIf="isValidField(column, 'incoterm')">
-                      <mat-option *ngFor="let incoterms of incotermType | keyvalue" [value]="incoterms.value">
-                        {{incoterms.key}}
-                      </mat-option>
-                    </ng-container>
-                    <ng-container *ngIf="isValidField(column, 'onCarriage')">
-                      <mat-option *ngFor="let OnCarriages of OnCarriageType | keyvalue" [value]="OnCarriages.key">
-                        {{OnCarriages.value}}
-                      </mat-option>
-                    </ng-container>
-                    <ng-container *ngIf="isValidField(column, 'shipmentType')">
-                      <mat-option *ngFor="let shipmentTypeValMaps of shipmentTypeValMap"
-                        [value]="shipmentTypeValMaps.name">
-                        {{shipmentTypeValMaps.value}}
-                      </mat-option>
+                    <ng-container *ngFor="let fieldMap of fieldFunctions(colIndex).controls; let fieldIndex = index">
+                      <ng-container *ngIf="isValidField(column, fieldIndex, 'mot')">
+                        <mat-option *ngFor="let item of  motType | keyvalue" [value]="item.value">
+                          {{item.key}}
+                        </mat-option>
+                      </ng-container>
+                      <ng-container *ngIf="isValidField(column,fieldIndex, 'status')">
+                        <mat-option *ngFor="let statuses of status | keyvalue" [value]="statuses.key">
+                          {{statuses.value}}
+                        </mat-option>
+                      </ng-container>
+                      <ng-container *ngIf="isValidField(column,fieldIndex, 'incoterm')">
+                        <mat-option *ngFor="let incoterms of incotermType | keyvalue" [value]="incoterms.value">
+                          {{incoterms.key}}
+                        </mat-option>
+                      </ng-container>
+                      <ng-container *ngIf="isValidField(column,fieldIndex, 'onCarriage')">
+                        <mat-option *ngFor="let OnCarriages of OnCarriageType | keyvalue" [value]="OnCarriages.key">
+                          {{OnCarriages.value}}
+                        </mat-option>
+                      </ng-container>
+                      <ng-container *ngIf="isValidField(column,fieldIndex, 'shipmentType')">
+                        <mat-option *ngFor="let shipmentTypeValMaps of shipmentTypeValMap"
+                          [value]="shipmentTypeValMaps.name">
+                          {{shipmentTypeValMaps.value}}
+                        </mat-option>
+                      </ng-container>
                     </ng-container>
                   </mat-select>
                 </mat-form-field>
@@ -353,10 +451,9 @@
     </div>
   </div>
   <mat-divider></mat-divider>
-  <br>  
+  <br>
   <button mat-raised-button color="primary" type="submit">Submit</button>
 </form>
 <div class="form-val">
   {{mgUI.value | json}}
-  {{headers | json}}
 </div>

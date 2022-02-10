@@ -9,14 +9,12 @@ const httpOptions = {
     'Content-Type': 'Application/json',
   }),
 };
-
 @Injectable({
   providedIn: 'root',
 })
 export class TaskService {
   private apiUrl = 'http://localhost:5000/tasks';
   constructor(private http: HttpClient) {}
-
   getTasks(): Observable<Task[]> {
     return this.http.get<Task[]>(this.apiUrl);
   }
@@ -31,7 +29,6 @@ export class TaskService {
   addTask(task: Task): Observable<Task> {
     return this.http.post<Task>(this.apiUrl, task, httpOptions);
   }
-
   // shipmentTasks: ShipmentTypes[]
   entity() {
     return [
@@ -724,7 +721,7 @@ export class TaskService {
       },
       {
         entity_id:1,
-        fieldName: 'additionalReferences[referencename=?].referencefieldName',
+        fieldName: 'referenceValueField',
         name: 'Additional Reference',
         type: 'any',
       },
@@ -1200,10 +1197,11 @@ export class TaskService {
       },
       {
         entity_id:2,
-        fieldName: 'additionalReferences[referencename=?].referencefieldName',
+        fieldName: 'referenceValueField',
         name: 'Additional Reference',
         type: 'any',
       },
     ];
   }
 }
+//fieldName: 'additionalReferences[referencename=?].referencefieldName',

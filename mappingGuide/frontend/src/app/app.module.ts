@@ -14,11 +14,11 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDividerModule } from '@angular/material/divider';
-
+import {MatTableModule} from '@angular/material/table';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './components/header/header.component';
-import { ButtonComponent } from './components/button/button.component';
+import { ButtonComponent } from './components/add-task/button/button.component';
 import { TasksComponent } from './components/tasks/tasks.component';
 import { TaskItemComponent } from './components/task-item/task-item.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -29,6 +29,7 @@ import { FormularComponent } from './components/formular/formular.component';
 import { SelectHintErrorExampleComponent } from './components/select-hint-error-example/select-hint-error-example.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DialogBoxComponent } from './components/dialog-box/dialog-box.component';
+import { UiTableComponent } from './components/ui-table/ui-table.component';
 
 const appRoutes: Routes = [
   { path: '', component: TasksComponent },
@@ -48,6 +49,7 @@ const appRoutes: Routes = [
     FormularComponent,
     SelectHintErrorExampleComponent,
     DialogBoxComponent,
+    UiTableComponent,
   ],
   imports: [
     BrowserModule,
@@ -69,6 +71,7 @@ const appRoutes: Routes = [
     MatIconModule,
     MatAutocompleteModule,
     MatDividerModule,
+    MatTableModule
   ],
   providers: [],
   bootstrap: [AppComponent],

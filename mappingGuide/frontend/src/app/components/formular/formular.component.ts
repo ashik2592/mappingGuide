@@ -62,7 +62,6 @@ export class FormularComponent implements OnInit {
   selectedEntity!: string;
   combinedId!: string;
   procurement!: any;
-  columnName!: FormArray;
   selectFormControl = new FormControl('', Validators.required);
   groupIdControl = new FormControl('', Validators.required);
   groups: Group[] = [
@@ -133,7 +132,7 @@ export class FormularComponent implements OnInit {
   };
   shipmentTypesValMaps: ShipmentTypeValMap[] = [
     { name: 'FCL         ', value: 'FCL' },
-    { name: 'LCL         ', value: 'LCL' },
+    { name: 'LCL ', value: 'LCL' },
     { name: 'FTL         ', value: 'FTL' },
     { name: 'LTL         ', value: 'LTL' },
     { name: 'PARTIAL_TL  ', value: 'Partial Truck Load' },
@@ -270,9 +269,15 @@ export class FormularComponent implements OnInit {
     this.shipmentType = this.tasks
       .shipment()
       .filter((e) => e.fieldName == shipment);
+
+    //.filter((e) => console.log(e));
     this.procurementType = this.tasks
       .procurement()
       .filter((e) => e.fieldName == procurement);
+
+    // console.log(this.shipmentType[0]);
+    // console.log(this.procurementType[0]);
+
     if ((shipment || procurement) === 'mot') {
       this.motType = this.mots;
     } else if ((shipment || procurement) === 'incoterm') {
@@ -286,7 +291,9 @@ export class FormularComponent implements OnInit {
     } else if (this.entityValue === 'shipment') {
       this.status = this.shipmentStatuses;
     }
+    console.log(shipment);
   }
+
   columns(): FormArray {
     return this.mgUI.get('columns') as FormArray;
   }
@@ -294,6 +301,8 @@ export class FormularComponent implements OnInit {
     return this.fb.group({
       name: this.fb.array([this.fb.control('')]),
       fields: this.fb.array([]),
+      importable: this.fb.array([]),
+      condition: this.fb.array([]),
       type: ['', Validators.required],
       csvProperties: this.fb.group({
         csvIndex: '',
@@ -339,6 +348,7 @@ export class FormularComponent implements OnInit {
   newFieldFunc(): FormGroup {
     return this.fb.group({
       fieldName: ['', Validators.required],
+      fieldNames: [''],
       regexToApply: this.fb.array([]),
     });
   }
@@ -347,6 +357,37 @@ export class FormularComponent implements OnInit {
   }
   removeFields(colIndex: number, fieldIndex: number) {
     this.fieldFunctions(colIndex).removeAt(fieldIndex);
+  }
+  // refernceValueFilter(value: string) {
+  //   console.log('this is the value' ,value);
+  //   (selectionChange)="refernceValueFilter(ref.value)
+  // }
+  updateAdditionalReferenceInFormControl(
+    column: AbstractControl,
+    fieldIndex: number,
+    value: any
+  ) {
+    const columnFormArray = !!column ? (column as FormArray) : null;
+    if (
+      !!columnFormArray &&
+      !!(columnFormArray.get('fields') as FormArray).at(fieldIndex) &&
+      !!(columnFormArray.get('fields') as FormArray)
+        .at(fieldIndex)
+        .get('fieldNames')
+    ) {
+      const columnFieldName = (columnFormArray.get('fields') as FormArray)
+        .at(fieldIndex)
+        .get('fieldNames')?.value;
+      const addReference =
+        'additionalReferences[referenceFieldName=' +
+        columnFieldName +
+        '].referenceFieldValue';
+
+      (columnFormArray.get('fields') as FormArray)
+        .at(fieldIndex)
+        .get('fieldName')
+        ?.patchValue(addReference);
+    }
   }
   regexFunctions(colIndex: number, fieldIndex: number): FormArray {
     return (this.columns().at(colIndex).get('fields') as FormArray)
@@ -372,6 +413,147 @@ export class FormularComponent implements OnInit {
       .get('regexToApply') as FormArray;
     regexField.removeAt(mapIndex);
   }
+  /************************************importable******************************************/
+  importableFunctions(colIndex: number): FormArray {
+    return this.columns().at(colIndex).get('importable') as FormArray;
+  }
+  newImportableFunc(): FormGroup {
+    return this.fb.group({
+      applicableTo: [''],
+      when: this.fb.array([]),
+    });
+  }
+  addNewImportable(colIndex: number) {
+    this.importableFunctions(colIndex).push(this.newImportableFunc());
+  }
+  removeImportable(colIndex: number, impIndex: number) {
+    this.importableFunctions(colIndex).removeAt(impIndex);
+  }
+  importableCdnFunctions(colIndex: number, impIndex: number): FormArray {
+    return (this.columns().at(colIndex).get('importable') as FormArray)
+      .at(impIndex)
+      .get('when') as FormArray;
+  }
+  newConditionFunc(): FormGroup {
+    return this.fb.group({
+      operation: '',
+      value: '',
+    });
+  }
+  addNewCdn(colIndex: number, impIndex: number) {
+    const cdnField = (
+      this.columns().at(colIndex).get('importable') as FormArray
+    )
+      .at(impIndex)
+      .get('when') as FormArray;
+    cdnField.push(this.newConditionFunc());
+  }
+  removeCdn(colIndex: number, impIndex: number, cdnIndex: number) {
+    const cdnField = (
+      this.columns().at(colIndex).get('importable') as FormArray
+    )
+      .at(impIndex)
+      .get('when') as FormArray;
+    cdnField.removeAt(cdnIndex);
+  }
+  /***************************************end*********************************************/
+  /************************************Condition*****************************************/
+  conditionFunctions(colIndex: number): FormArray {
+    return this.columns().at(colIndex).get('condition') as FormArray;
+  }
+  newConditionsFunc(): FormGroup {
+    return this.fb.group({
+      when: this.fb.array([]),
+      //then: [''],
+      then: this.fb.group({
+        columnName: [''],
+        operation: [''],
+        value: [''],
+      }),
+    });
+  }
+ 
+  addNewConditions(colIndex: number) {
+    this.conditionFunctions(colIndex).push(this.newConditionsFunc());
+  }
+  removeConditions(colIndex: number, cdnsIndex: number) {
+    this.conditionFunctions(colIndex).removeAt(cdnsIndex);
+  }
+  conditionsFunctions(colIndex: number, cdnsIndex: number): FormArray {
+    return (this.columns().at(colIndex).get('condition') as FormArray)
+      .at(cdnsIndex)
+      .get('when') as FormArray;
+  }
+  newCdnWhenFunc(): FormGroup {
+    return this.fb.group({
+      operation: '',
+      value: '',
+      regexToApply: this.fb.array([]),
+    });
+  }
+  addNewCdns(colIndex: number, cdnsIndex: number) {
+    const cdnsField = (
+      this.columns().at(colIndex).get('condition') as FormArray
+    )
+      .at(cdnsIndex)
+      .get('when') as FormArray;
+    cdnsField.push(this.newCdnWhenFunc());
+  }
+  removeCdns(colIndex: number, cdnsIndex: number, whenIndex: number) {
+    const cdnsField = (
+      this.columns().at(colIndex).get('condition') as FormArray
+    )
+      .at(cdnsIndex)
+      .get('when') as FormArray;
+    cdnsField.removeAt(whenIndex);
+  }
+  conditionsRegexFunctions(
+    colIndex: number,
+    cdnsIndex: number,
+    whenIndex: number
+  ): FormArray {
+    return (
+      (this.columns().at(colIndex).get('condition') as FormArray)
+        .at(cdnsIndex)
+        .get('when') as FormArray
+    )
+      .at(whenIndex)
+      .get('regexToApply') as FormArray;
+  }
+  newCdnWhenRegexFunc(): FormGroup {
+    return this.fb.group({
+      regexToSearch: '',
+      replaceWith: '',
+      useMatchedValue: false,
+    });
+  }
+  addNewCdnsRegex(colIndex: number, cdnsIndex: number, whenIndex: number) {
+    const cdnsField = (
+      (this.columns().at(colIndex).get('condition') as FormArray)
+        .at(cdnsIndex)
+        .get('when') as FormArray
+    )
+      .at(whenIndex)
+      .get('regexToApply') as FormArray;
+    cdnsField.push(this.newCdnWhenRegexFunc());
+  }
+  removeCdnsRegex(
+    colIndex: number,
+    cdnsIndex: number,
+    whenIndex: number,
+    rgxIndex: number
+  ) {
+    const cdnsField = (
+      (this.columns().at(colIndex).get('condition') as FormArray)
+        .at(cdnsIndex)
+        .get('when') as FormArray
+    )
+      .at(whenIndex)
+      .get('regexToApply') as FormArray;
+    cdnsField.removeAt(rgxIndex);
+  }
+
+  /***************************************end*********************************************/
   exportCategory(colIndex: number): FormArray {
     return this.columns().at(colIndex).get('exportCategory') as FormArray;
   }
@@ -392,18 +574,24 @@ export class FormularComponent implements OnInit {
   removeIdentifier(colIndex: number, idnIndex: number) {
     this.excludeFromIdentifiers(colIndex).removeAt(idnIndex);
   }
-  isValidField(column: AbstractControl, fieldName: string): boolean {
-    const columnFormGroup = !!column ? (column as FormGroup) : null;
-    //const columnFormGroup = this.mgUI.get('columns');
+  isValidField(
+    column: AbstractControl,
+    fieldIndex: number,
+    fieldName: string
+  ): boolean {
+    const columnFormArray = !!column ? (column as FormArray) : null;
+    //const columnFormArray = this.mgUI.get('columns');
     if (
-      !!columnFormGroup &&
-      !!columnFormGroup.get('fields') &&
-      !!columnFormGroup.get('fields')?.get('fieldName')
+      !!columnFormArray &&
+      !!(columnFormArray.get('fields') as FormArray).at(fieldIndex) &&
+      !!(columnFormArray.get('fields') as FormArray)
+        .at(fieldIndex)
+        .get('fieldName')
     ) {
-      const columnFieldName = this.shipment;
-      // const columnFieldName = columnFormGroup
-      //   .get('fields')
-      //   ?.get('fieldName')?.value;
+      //const columnFieldName = this.shipment;
+      const columnFieldName = (columnFormArray.get('fields') as FormArray)
+        .at(fieldIndex)
+        .get('fieldName')?.value;
       if (!!columnFieldName && columnFieldName === fieldName) {
         return true;
       }
